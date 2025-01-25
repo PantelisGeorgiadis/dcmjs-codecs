@@ -1,0 +1,18 @@
+## All non-dist directories
+.github/
+coverage/
+examples/
+src/
+test/
+wasm/
+documentation/
+
+## Root files
+.clang-format
+.eslintrc.json
+.gitignore
+.gitattributes
+.jsdocrc.json
+index.test-d.ts
+karma.config.js
+webpack.config.js

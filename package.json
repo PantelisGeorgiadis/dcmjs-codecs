@@ -1,0 +1,81 @@
+{
+  "name": "dcmjs-codecs",
+  "version": "0.0.1",
+  "description": "DICOM file and dataset transcoding for Node.js and browser using dcmjs",
+  "main": "build/dcmjs-codecs.min.js",
+  "module": "build/dcmjs-codecs.min.js",
+  "types": "index.d.ts",
+  "scripts": {
+    "build": "npm run version && npm run lint && npm run test && npm run coverage && npm run webpack",
+    "clean": "npm run clean:build && npm run clean:coverage && npm run clean:docs",
+    "clean:build": "shx rm -rf build",
+    "clean:coverage": "shx rm -rf coverage",
+    "clean:docs": "shx rm -rf documentation",
+    "coverage": "c8 --check-coverage --lines 80 --functions 70 --branches 70 --statements 70 --clean --reporter=text --reporter=html --include=src/*.js --exclude=src/index.js --exclude=src/version.js --exclude=src/log.js mocha test/**/*.test.js",
+    "doc": "npm run doc:generate && open-cli documentation/index.html",
+    "doc:generate": "npm run clean:docs && jsdoc -c .jsdocrc.json",
+    "format:cpp": "clang-format -style=file:.clang-format -i --glob=wasm/src/**/*.{h,cpp}",
+    "lint": "eslint -c .eslintrc.json --fix src && prettier --tab-width 2 --single-quote true --print-width 100 --use-tabs false --trailing-comma es5 --write src/**/*.js test/**/*.js examples/**/*.{js,ts,html} *.ts",
+    "start": "npm run webpack",
+    "start:examples:node:js": "node examples/index.js",
+    "start:examples:node:ts": "ts-node examples/index.ts",
+    "start:examples:web": "webpack serve --port 8080 --open --no-client-overlay-warnings --no-client-overlay-errors",
+    "test": "npm run test:types && npm run test:node && npm run test:browser",
+    "test:browser": "karma start karma.config.js",
+    "test:node": "mocha test/**/*.test.js",
+    "test:types": "tsd",
+    "version": "node -p -e \"'module.exports = \\'' + require('./package.json').version + '\\';'\" > src/version.js",
+    "webpack": "webpack --progress --config webpack.config.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PantelisGeorgiadis/dcmjs-codecs.git"
+  },
+  "keywords": [
+    "DICOM",
+    "medical imaging",
+    "dcmjs",
+    "transcoding"
+  ],
+  "author": "Pantelis Georgiadis",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/PantelisGeorgiadis/dcmjs-codecs/issues"
+  },
+  "funding": "https://github.com/PantelisGeorgiadis/dcmjs-codecs?sponsor=1",
+  "homepage": "https://github.com/PantelisGeorgiadis/dcmjs-codecs",
+  "dependencies": {
+    "dcmjs": "^0.38.0",
+    "loglevel": "^1.9.2",
+    "loglevel-plugin-prefix": "^0.8.4"
+  },
+  "devDependencies": {
+    "browserify": "^17.0.1",
+    "c8": "^9.1.0",
+    "chai": "^4.3.10",
+    "clang-format": "^1.8.0",
+    "copy-webpack-plugin": "^12.0.2",
+    "docdash": "^2.0.2",
+    "eslint": "^8.57.0",
+    "jsdoc": "^4.0.4",
+    "karma": "^6.4.4",
+    "karma-browserify": "^8.1.0",
+    "karma-chai": "^0.1.0",
+    "karma-chrome-launcher": "^3.2.0",
+    "karma-mocha": "^2.0.1",
+    "karma-mocha-reporter": "^2.2.5",
+    "karma-sinon": "^1.0.5",
+    "mocha": "^11.0.1",
+    "open-cli": "^7.2.0",
+    "prettier": "^3.4.2",
+    "shx": "^0.3.4",
+    "sinon": "^17.0.1",
+    "terser-webpack-plugin": "^5.3.11",
+    "ts-node": "^10.9.2",
+    "tsd": "^0.31.2",
+    "typescript": "^5.7.3",
+    "webpack": "^5.97.1",
+    "webpack-cli": "^6.0.1",
+    "webpack-dev-server": "^4.15.2"
+  }
+}

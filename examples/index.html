@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>dcmjs-codecs transcoding example</title>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1"
+    />
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        display: table;
+      }
+      .container {
+        display: table-cell;
+        text-align: center;
+        vertical-align: middle;
+      }
+      .content {
+        display: inline-block;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="dropZone" class="container">
+      <div class="content">
+        <p id="infoText">
+          <a id="openLink" href="">Open</a> or drag and drop a DICOM Part 10 file to transcode
+          it!<br />Nothing gets uploaded anywhere.
+        </p>
+        <div>
+          <label for="newTransferSyntax">New transfer syntax: </label>
+          <select id="newTransferSyntax"></select>
+        </div>
+        <p id="errorText"></p>
+      </div>
+    </div>
+  </body>
+  <script type="text/javascript" src="https://unpkg.com/dcmjs"></script>
+  <script type="text/javascript" src="dcmjs-codecs.min.js"></script>
+  <script>
+    const { constants, NativeCodecs, Transcoder } = window.dcmjsCodecs;
+    const { TransferSyntax } = constants;
+    const TranscodeMap = [
+      { name: 'Implicit VR Endian', syntax: TransferSyntax.ImplicitVRLittleEndian },
+      { name: 'Explicit VR Little Endian', syntax: TransferSyntax.ExplicitVRLittleEndian },
+      { name: 'Explicit VR Big Endian', syntax: TransferSyntax.ExplicitVRBigEndian },
+      { name: 'RLE Lossless', syntax: TransferSyntax.RleLossless },
+      { name: 'JPEG Baseline', syntax: TransferSyntax.JpegBaselineProcess1 },
+      { name: 'JPEG Lossless', syntax: TransferSyntax.JpegLosslessProcess14V1 },
+      { name: 'JPEG-LS Lossless', syntax: TransferSyntax.JpegLsLossless },
+      { name: 'JPEG-LS Lossy', syntax: TransferSyntax.JpegLsLossy },
+      { name: 'JPEG 2000 Lossless', syntax: TransferSyntax.Jpeg2000Lossless },
+      { name: 'JPEG 2000 Lossy', syntax: TransferSyntax.Jpeg2000Lossy },
+      // { name: 'High-Throughput JPEG 2000 Lossless', syntax: TransferSyntax.HtJpeg2000Lossless },
+      // {
+      //   name: 'High-Throughput JPEG 2000 Lossless RCPL',
+      //   syntax: TransferSyntax.HtJpeg2000LosslessRpcl,
+      // },
+      // { name: 'High-Throughput JPEG 2000 Lossy', syntax: TransferSyntax.HtJpeg2000Lossy },
+    ];
+
+    window.onload = async (event) => {
+      const newTransferSyntaxElement = document.getElementById('newTransferSyntax');
+      TranscodeMap.forEach((item, index) => {
+        const option = document.createElement('option');
+        option.value = item.syntax;
+        option.text = `${item.name} [${item.syntax}]`;
+        if (index === 0) {
+          option.selected = true;
+        }
+        newTransferSyntaxElement.appendChild(option);
+      });
+
+      await NativeCodecs.initializeAsync({ logCodecsInfo: true, logCodecsTrace: true });
+    };
+
+    function downloadDicomPart10(arrayBuffer, fileName) {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([arrayBuffer], { type: 'application/dicom' }));
+      a.download = fileName;
+      a.click();
+    }
+
+    function transcodeFile(file) {
+      const reader = new FileReader();
+      reader.onload = (file) => {
+        const arrayBuffer = reader.result;
+        const newTransferSyntaxElement = document.getElementById('newTransferSyntax');
+        const errorTextElement = document.getElementById('errorText');
+        errorTextElement.innerText = '';
+
+        try {
+          const t0 = performance.now();
+          const transcoder = new Transcoder(arrayBuffer);
+          const t1 = performance.now();
+          console.log(`Parsing time: ${t1 - t0} ms`);
+
+          const oldTransferSyntaxUid = transcoder.getTransferSyntaxUid();
+          const oldTransferSyntaxItem = TranscodeMap.find(
+            (item) => item.syntax === oldTransferSyntaxUid
+          );
+          if (oldTransferSyntaxItem === undefined) {
+            errorTextElement.innerText = `DICOM Part 10 file transfer syntax ${oldTransferSyntaxUid} is not supported...`;
+            return;
+          }
+
+          const newTransferSyntaxUid = newTransferSyntaxElement.value;
+          const newTransferSyntaxItem = TranscodeMap.find(
+            (item) => item.syntax === newTransferSyntaxUid
+          );
+          if (oldTransferSyntaxUid === newTransferSyntaxUid) {
+            errorTextElement.innerText = `DICOM Part 10 file transfer syntax already has ${oldTransferSyntaxUid} syntax. No transcoding needed!`;
+            return;
+          }
+
+          const t2 = performance.now();
+          transcoder.transcode(newTransferSyntaxUid);
+          const t3 = performance.now();
+          console.log(
+            `Transcoded from ${oldTransferSyntaxItem.name} [${oldTransferSyntaxItem.syntax}] to ${newTransferSyntaxItem.name} [${newTransferSyntaxItem.syntax}]: ${t3 - t2} ms`
+          );
+
+          const t4 = performance.now();
+          const transcodedArrayBuffer = transcoder.getDicomPart10();
+          const t5 = performance.now();
+          console.log(`Writing time: ${t5 - t4} ms`);
+
+          downloadDicomPart10(
+            transcodedArrayBuffer,
+            `TRANSCODED_${newTransferSyntaxUid}_${Date.now()}.DCM`
+          );
+        } catch (err) {
+          errorTextElement.innerText = 'Error: ' + err.message;
+          throw err;
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    const dropZone = document.getElementById('dropZone');
+    dropZone.ondragover = (event) => {
+      event.stopPropagation();
+      event.preventDefault();
+      event.dataTransfer.dropEffect = 'copy';
+    };
+    dropZone.ondrop = (event) => {
+      event.stopPropagation();
+      event.preventDefault();
+      const files = event.dataTransfer.files;
+      transcodeFile(files[0]);
+    };
+
+    const openLink = document.getElementById('openLink');
+    openLink.onclick = () => {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.onchange = (event) => {
+        const files = event.target.files;
+        transcodeFile(files[0]);
+      };
+      input.click();
+
+      return false;
+    };
+  </script>
+</html>
