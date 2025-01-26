@@ -89,7 +89,7 @@ const initOpts = {
   webAssemblyModulePathOrUrl: undefined,
   // Optional flag to enable native codecs informational message logging.
   // If not provided, the native codecs informational message logging is disabled.
-  logCodecsInfo: false
+  logCodecsInfo: false,
   // Optional flag to enable native codecs trace message logging.
   // If not provided, the native codecs trace message logging is disabled.
   logCodecsTrace: false
@@ -116,7 +116,7 @@ const encodingDecodingOpts = {
   progressionOrder: Lrcp,
   // Optional JPEG 2000 quality, in case of JPEG 2000 lossy encoding.
   // Sets the openjpeg tcp_rates[0] variable
-  rate: 20,
+  rate: 20
 };
 
 // Transcode to a different transfer syntax UID.
