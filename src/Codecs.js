@@ -41,16 +41,6 @@ class Codec {
   }
 
   /**
-   * Gets the transfer syntax UID.
-   * @method
-   * @returns {string} Transfer syntax UID.
-   * @throws Error if getTransferSyntaxUid is not implemented.
-   */
-  getTransferSyntaxUid() {
-    throw new Error('getTransferSyntaxUid should be implemented');
-  }
-
-  /**
    * Creates a codec object based on the transfer syntax UID.
    * @method
    * @static
@@ -59,36 +49,28 @@ class Codec {
    * @throws Error if transfer syntax UID is not supported.
    */
   static getCodec(transferSyntaxUid) {
-    if (transferSyntaxUid === TransferSyntax.ImplicitVRLittleEndian) {
-      return new ImplicitVRLittleEndianCodec();
-    } else if (transferSyntaxUid === TransferSyntax.ExplicitVRLittleEndian) {
-      return new ExplicitVRLittleEndianCodec();
-    } else if (transferSyntaxUid === TransferSyntax.ExplicitVRBigEndian) {
-      return new ExplicitVRBigEndianCodec();
-    } else if (transferSyntaxUid === TransferSyntax.RleLossless) {
-      return new RleLosslessCodec();
-    } else if (transferSyntaxUid === TransferSyntax.JpegBaselineProcess1) {
-      return new JpegBaselineProcess1Codec();
-    } else if (transferSyntaxUid === TransferSyntax.JpegLosslessProcess14V1) {
-      return new JpegLosslessProcess14V1Codec();
-    } else if (transferSyntaxUid === TransferSyntax.JpegLsLossless) {
-      return new JpegLsLosslessCodec();
-    } else if (transferSyntaxUid === TransferSyntax.JpegLsLossy) {
-      return new JpegLsLossyCodec();
-    } else if (transferSyntaxUid === TransferSyntax.Jpeg2000Lossless) {
-      return new Jpeg2000LosslessCodec();
-    } else if (transferSyntaxUid === TransferSyntax.Jpeg2000Lossy) {
-      return new Jpeg2000LossyCodec();
-      // }
-      // else if (transferSyntaxUid === TransferSyntax.HtJpeg2000Lossless) {
-      //   return new HtJpeg2000LosslessCodec();
-      // }  else if (transferSyntaxUid === TransferSyntax.HtJpeg2000LosslessRpcl) {
-      //   return new HtJpeg2000LosslessRpclCodec();
-      // }  else if (transferSyntaxUid === TransferSyntax.HtJpeg2000Lossy) {
-      //   return new HtJpeg2000LossyCodec();
-    } else {
-      throw new Error(`Codec for transfer syntax ${transferSyntaxUid} is not implemented`);
+    const codecMap = {
+      [TransferSyntax.ImplicitVRLittleEndian]: ImplicitVRLittleEndianCodec,
+      [TransferSyntax.ExplicitVRLittleEndian]: ExplicitVRLittleEndianCodec,
+      [TransferSyntax.ExplicitVRBigEndian]: ExplicitVRBigEndianCodec,
+      [TransferSyntax.RleLossless]: RleLosslessCodec,
+      [TransferSyntax.JpegBaselineProcess1]: JpegBaselineProcess1Codec,
+      [TransferSyntax.JpegLosslessProcess14V1]: JpegLosslessProcess14V1Codec,
+      [TransferSyntax.JpegLsLossless]: JpegLsLosslessCodec,
+      [TransferSyntax.JpegLsLossy]: JpegLsLossyCodec,
+      [TransferSyntax.Jpeg2000Lossless]: Jpeg2000LosslessCodec,
+      [TransferSyntax.Jpeg2000Lossy]: Jpeg2000LossyCodec,
+      // [TransferSyntax.HtJpeg2000Lossless]: HtJpeg2000LosslessCodec,
+      // [TransferSyntax.HtJpeg2000LosslessRpcl]: HtJpeg2000LosslessRpclCodec,
+      // [TransferSyntax.HtJpeg2000Lossy]: HtJpeg2000LossyCodec,
+    };
+
+    const codec = codecMap[transferSyntaxUid];
+    if (!codec) {
+      throw new Error(`Codec for transfer syntax UID ${transferSyntaxUid} is not implemented`);
     }
+
+    return new codec();
   }
 
   //#region Private Methods
@@ -233,16 +215,6 @@ class ImplicitVRLittleEndianCodec extends Codec {
   decode(elements, syntax, parameters = {}) {
     return elements;
   }
-
-  /**
-   * Gets the transfer syntax UID.
-   * @method
-   * @returns {string} Transfer syntax UID.
-   */
-  // eslint-disable-next-line no-unused-vars
-  getTransferSyntaxUid() {
-    return TransferSyntax.ImplicitVRLittleEndian;
-  }
 }
 //#endregion
 
@@ -273,16 +245,6 @@ class ExplicitVRLittleEndianCodec extends Codec {
   decode(elements, syntax, parameters = {}) {
     return elements;
   }
-
-  /**
-   * Gets the transfer syntax UID.
-   * @method
-   * @returns {string} Transfer syntax UID.
-   */
-  // eslint-disable-next-line no-unused-vars
-  getTransferSyntaxUid() {
-    return TransferSyntax.ExplicitVRLittleEndian;
-  }
 }
 //#endregion
 
@@ -312,16 +274,6 @@ class ExplicitVRBigEndianCodec extends Codec {
   // eslint-disable-next-line no-unused-vars
   decode(elements, syntax, parameters = {}) {
     return this._swapPixelData(elements, syntax);
-  }
-
-  /**
-   * Gets the transfer syntax UID.
-   * @method
-   * @returns {string} Transfer syntax UID.
-   */
-  // eslint-disable-next-line no-unused-vars
-  getTransferSyntaxUid() {
-    return TransferSyntax.ExplicitVRBigEndian;
   }
 
   //#region Private Methods
@@ -387,15 +339,6 @@ class RleLosslessCodec extends Codec {
    */
   decode(elements, syntax, parameters = {}) {
     return this._baseDecodeImpl(elements, syntax, 'decodeRle', parameters);
-  }
-
-  /**
-   * Gets the transfer syntax UID.
-   * @method
-   * @returns {string} Transfer syntax UID.
-   */
-  getTransferSyntaxUid() {
-    return TransferSyntax.RleLossless;
   }
 }
 //#endregion
@@ -539,15 +482,6 @@ class JpegBaseCodec extends Codec {
 
     return updatedElements;
   }
-
-  /**
-   * Gets the transfer syntax UID.
-   * @method
-   * @returns {string} Transfer syntax UID.
-   */
-  getTransferSyntaxUid() {
-    return undefined;
-  }
 }
 //#endregion
 
@@ -587,15 +521,6 @@ class JpegBaselineProcess1Codec extends JpegBaseCodec {
   decode(elements, syntax, parameters = {}) {
     return super.decode(elements, syntax, parameters);
   }
-
-  /**
-   * Gets the transfer syntax UID.
-   * @method
-   * @returns {string} Transfer syntax UID.
-   */
-  getTransferSyntaxUid() {
-    return TransferSyntax.JpegBaselineProcess1;
-  }
 }
 /* c8 ignore stop */
 //#endregion
@@ -628,15 +553,6 @@ class JpegLosslessProcess14V1Codec extends JpegBaseCodec {
    */
   decode(elements, syntax, parameters = {}) {
     return super.decode(elements, syntax, parameters);
-  }
-
-  /**
-   * Gets the transfer syntax UID.
-   * @method
-   * @returns {string} Transfer syntax UID.
-   */
-  getTransferSyntaxUid() {
-    return TransferSyntax.JpegLosslessProcess14V1;
   }
 }
 //#endregion
@@ -761,15 +677,6 @@ class JpegLsBaseCodec extends Codec {
 
     return updatedElements;
   }
-
-  /**
-   * Gets the transfer syntax UID.
-   * @method
-   * @returns {string} Transfer syntax UID.
-   */
-  getTransferSyntaxUid() {
-    return undefined;
-  }
 }
 //#endregion
 
@@ -799,15 +706,6 @@ class JpegLsLosslessCodec extends JpegLsBaseCodec {
    */
   decode(elements, syntax, parameters = {}) {
     return super.decode(elements, syntax, parameters);
-  }
-
-  /**
-   * Gets the transfer syntax UID.
-   * @method
-   * @returns {string} Transfer syntax UID.
-   */
-  getTransferSyntaxUid() {
-    return TransferSyntax.JpegLsLossless;
   }
 }
 //#endregion
@@ -839,15 +737,6 @@ class JpegLsLossyCodec extends JpegLsBaseCodec {
    */
   decode(elements, syntax, parameters = {}) {
     return super.decode(elements, syntax, parameters);
-  }
-
-  /**
-   * Gets the transfer syntax UID.
-   * @method
-   * @returns {string} Transfer syntax UID.
-   */
-  getTransferSyntaxUid() {
-    return TransferSyntax.JpegLsLossy;
   }
 }
 /* c8 ignore stop */
@@ -1005,15 +894,6 @@ class Jpeg2000BaseCodec extends Codec {
 
     return updatedElements;
   }
-
-  /**
-   * Gets the transfer syntax UID.
-   * @method
-   * @returns {string} Transfer syntax UID.
-   */
-  getTransferSyntaxUid() {
-    return undefined;
-  }
 }
 //#endregion
 
@@ -1043,15 +923,6 @@ class Jpeg2000LosslessCodec extends Jpeg2000BaseCodec {
    */
   decode(elements, syntax, parameters = {}) {
     return super.decode(elements, syntax, 'decodeJpeg2000', parameters);
-  }
-
-  /**
-   * Gets the transfer syntax UID.
-   * @method
-   * @returns {string} Transfer syntax UID.
-   */
-  getTransferSyntaxUid() {
-    return TransferSyntax.Jpeg2000Lossless;
   }
 }
 //#endregion
@@ -1084,15 +955,6 @@ class Jpeg2000LossyCodec extends Jpeg2000BaseCodec {
   decode(elements, syntax, parameters = {}) {
     return super.decode(elements, syntax, 'decodeJpeg2000', parameters);
   }
-
-  /**
-   * Gets the transfer syntax UID.
-   * @method
-   * @returns {string} Transfer syntax UID.
-   */
-  getTransferSyntaxUid() {
-    return TransferSyntax.Jpeg2000Lossy;
-  }
 }
 /* c8 ignore stop */
 //#endregion
@@ -1123,15 +985,6 @@ class HtJpeg2000LosslessCodec extends Jpeg2000BaseCodec {
    */
   decode(elements, syntax, parameters = {}) {
     return super.decode(elements, syntax, 'decodeHtJpeg2000', parameters);
-  }
-
-  /**
-   * Gets the transfer syntax UID.
-   * @method
-   * @returns {string} Transfer syntax UID.
-   */
-  getTransferSyntaxUid() {
-    return TransferSyntax.HtJpeg2000Lossless;
   }
 }
 //#endregion
@@ -1164,15 +1017,6 @@ class HtJpeg2000LosslessRpclCodec extends Jpeg2000BaseCodec {
   decode(elements, syntax, parameters = {}) {
     return super.decode(elements, syntax, 'decodeHtJpeg2000', parameters);
   }
-
-  /**
-   * Gets the transfer syntax UID.
-   * @method
-   * @returns {string} Transfer syntax UID.
-   */
-  getTransferSyntaxUid() {
-    return TransferSyntax.HtJpeg2000Lossless;
-  }
 }
 //#endregion
 
@@ -1203,15 +1047,6 @@ class HtJpeg2000LossyCodec extends Jpeg2000BaseCodec {
    */
   decode(elements, syntax, parameters = {}) {
     return super.decode(elements, syntax, 'decodeHtJpeg2000', parameters);
-  }
-
-  /**
-   * Gets the transfer syntax UID.
-   * @method
-   * @returns {string} Transfer syntax UID.
-   */
-  getTransferSyntaxUid() {
-    return TransferSyntax.HtJpeg2000Lossy;
   }
 }
 /* c8 ignore stop */

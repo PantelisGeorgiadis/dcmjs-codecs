@@ -22,8 +22,8 @@ const {
   PlanarConfiguration,
   TransferSyntax,
 } = require('./Constants');
-const NativeCodecs = require('./NativeCodecs');
 const Context = require('./Context');
+const NativeCodecs = require('./NativeCodecs');
 const Transcoder = require('./Transcoder');
 const log = require('./log');
 const version = require('./version');

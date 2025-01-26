@@ -115,6 +115,7 @@ const StorageClass = {
 Object.freeze(StorageClass);
 //#endregion
 
+//#region ErrNo
 /**
  * WASI error codes.
  * @constant {Object}
@@ -124,6 +125,7 @@ const ErrNo = {
   BadFileDescriptor: 8,
 };
 Object.freeze(ErrNo);
+//#endregion
 
 //#region JpegSampleFactor
 /**

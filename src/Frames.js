@@ -320,6 +320,7 @@ class FrameConverter {
    * @param {number} samplesPerPixel - Samples per pixel.
    * @param {number} oldPlanarConfiguration - Current planar configuration.
    * @returns {Uint8Array} Pixel data with converted planar configuration.
+   * @throws Error if bits allocated is not supported.
    */
   static changePlanarConfiguration(
     pixelData,

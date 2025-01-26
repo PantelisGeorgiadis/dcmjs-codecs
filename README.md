@@ -75,15 +75,11 @@ const transcodedArrayBuffer = transcoder.getDicomPart10();
 // Import objects in Node.js
 const dcmjsCodecs = require('dcmjs-codecs');
 const { NativeCodecs, Transcoder } = dcmjsCodecs;
-const { TransferSyntax } = constants;
+const { Jpeg2000ProgressionOrder, TransferSyntax } = constants;
 
 // Import objects in Browser
 const { NativeCodecs, Transcoder } = window.dcmjsCodecs;
 const { Jpeg2000ProgressionOrder, TransferSyntax } = constants;
-
-// Import objects in Browser
-const { DicomImage, WindowLevel, NativePixelDecoder } = window.dcmjsImaging;
-const { StandardColorPalette } = window.dcmjsImaging.constants;
 
 // Create native codecs WebAssembly initialization options.
 const initOpts = {
@@ -119,7 +115,7 @@ const encodingDecodingOpts = {
   // Optional JPEG progression order, in case of JPEG 2000 and HT-JPEG 2000 encoding.
   progressionOrder: Lrcp,
   // Optional JPEG 2000 quality, in case of JPEG 2000 lossy encoding.
-  // Sets the charls allowedLossyError variable.
+  // Sets the openjpeg tcp_rates[0] variable
   rate: 20,
 };
 

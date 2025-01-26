@@ -4,7 +4,12 @@ const {
   createDicomPart10FromColorRandomImage,
   createDicomPart10FromGrayscaleRandomImage,
 } = require('./utils/p10Utils');
-const { TranscodeMap, TransferSyntax } = require('./../src/Constants');
+const {
+  PhotometricInterpretation,
+  PixelRepresentation,
+  TranscodeMap,
+  TransferSyntax,
+} = require('./../src/Constants');
 const NativeCodecs = require('./../src/NativeCodecs');
 const Transcoder = require('./../src/Transcoder');
 
@@ -173,6 +178,47 @@ describe('Transcoder', () => {
   after(() => {
     sinon.restore();
   });
+
+  it('should correctly perform basic trancoding', () => {
+    const width = 3;
+    const height = 3;
+    // prettier-ignore
+    const pixels = Uint8Array.from([
+      0x00, 0xff, 0x00,
+      0xff, 0x7f, 0xff,
+      0x00, 0xff, 0x00,
+    ]);
+
+    const elements = {
+      _vrMap: {
+        PixelData: 'OB',
+      },
+      BitsAllocated: 8,
+      BitsStored: 8,
+      Columns: width,
+      HighBit: 7,
+      NumberOfFrames: 1,
+      PhotometricInterpretation: PhotometricInterpretation.Monochrome2,
+      PixelData: [pixels.buffer],
+      PixelRepresentation: PixelRepresentation.Unsigned,
+      Rows: height,
+      SamplesPerPixel: 1,
+    };
+
+    const transcoder1 = new Transcoder(elements, TransferSyntax.ExplicitVRLittleEndian);
+    transcoder1.transcode(TransferSyntax.Jpeg2000Lossless);
+    const transcodedDataset = transcoder1.getDicomDataset();
+    const transcodedTransferSyntaxUid1 = transcoder1.getTransferSyntaxUid();
+
+    const transcoder2 = new Transcoder(transcodedDataset, transcodedTransferSyntaxUid1);
+    transcoder2.transcode(TransferSyntax.ExplicitVRLittleEndian);
+    const transcodedElements = transcoder2.getElements();
+    const transcodedTransferSyntaxUid2 = transcoder2.getTransferSyntaxUid();
+
+    expect(transcodedTransferSyntaxUid2).to.equal(TransferSyntax.ExplicitVRLittleEndian);
+    expect(Object.keys(elements).length).to.be.eq(Object.keys(transcodedElements).length);
+    expect(Object.keys(elements)).to.have.members(Object.keys(transcodedElements));
+  }).timeout(20000);
 
   it('should correctly encode and decode basic ImplicitVRLittleEndian [DICOM part10]', () => {
     expect(NativeCodecs.isInitialized()).to.be.true;

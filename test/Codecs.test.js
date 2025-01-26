@@ -18,8 +18,11 @@ describe('Codecs', () => {
     expect(() => {
       subclassedCodec.decode({}, '', {});
     }).to.throw();
+  });
+
+  it('should throw for an unsupported transfer syntax UID', () => {
     expect(() => {
-      subclassedCodec.getTransferSyntaxUid();
+      Codec.getCodec('1.2.3.4.5.6');
     }).to.throw();
   });
 });

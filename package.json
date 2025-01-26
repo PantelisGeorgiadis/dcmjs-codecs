@@ -15,7 +15,7 @@
     "doc": "npm run doc:generate && open-cli documentation/index.html",
     "doc:generate": "npm run clean:docs && jsdoc -c .jsdocrc.json",
     "format:cpp": "clang-format -style=file:.clang-format -i --glob=wasm/src/**/*.{h,cpp}",
-    "lint": "eslint -c .eslintrc.json --fix src && prettier --tab-width 2 --single-quote true --print-width 100 --use-tabs false --trailing-comma es5 --write src/**/*.js test/**/*.js examples/**/*.{js,ts,html} *.ts",
+    "lint": "eslint -c .eslintrc.json --fix src && prettier --tab-width 2 --single-quote true --print-width 100 --use-tabs false --trailing-comma es5 --write src/**/*.js test/**/*.js test/**/*.test.js examples/**/*.{js,ts,html} *.ts",
     "start": "npm run webpack",
     "start:examples:node:js": "node examples/index.js",
     "start:examples:node:ts": "ts-node examples/index.ts",

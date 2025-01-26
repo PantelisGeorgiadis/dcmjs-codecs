@@ -48,7 +48,8 @@ class Transcoder {
    * @param {number} [parameters.allowedLossyError] - JPEG-LS allowed lossy error (encoding).
    * @param {number} [parameters.progressionOrder] - JPEG 2000 progression order (encoding).
    * @param {number} [parameters.rate] - JPEG 2000 compression rate (encoding).
-   * @throws Error if new transfer syntax UID is not supported.
+   * @throws Error if new transfer syntax UID is not provided or not supported or
+   * bits allocated value is not supported.
    */
   transcode(newTransferSyntaxUid, parameters = {}) {
     if (!newTransferSyntaxUid) {
