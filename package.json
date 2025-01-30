@@ -1,6 +1,6 @@
 {
   "name": "dcmjs-codecs",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "DICOM file and dataset transcoding for Node.js and browser using dcmjs",
   "main": "build/dcmjs-codecs.min.js",
   "module": "build/dcmjs-codecs.min.js",
@@ -11,7 +11,7 @@
     "clean:build": "shx rm -rf build",
     "clean:coverage": "shx rm -rf coverage",
     "clean:docs": "shx rm -rf documentation",
-    "coverage": "c8 --check-coverage --lines 80 --functions 70 --branches 70 --statements 70 --clean --reporter=text --reporter=html --include=src/*.js --exclude=src/index.js --exclude=src/version.js --exclude=src/log.js mocha test/**/*.test.js",
+    "coverage": "c8 --check-coverage --lines 80 --functions 80 --branches 80 --statements 80 --clean --reporter=text --reporter=html --include=src/*.js --exclude=src/index.js --exclude=src/version.js --exclude=src/log.js mocha test/**/*.test.js",
     "doc": "npm run doc:generate && open-cli documentation/index.html",
     "doc:generate": "npm run clean:docs && jsdoc -c .jsdocrc.json",
     "format:cpp": "clang-format -style=file:.clang-format -i --glob=wasm/src/**/*.{h,cpp}",

@@ -113,7 +113,7 @@ const encodingDecodingOpts = {
 
   // JPEG 2000 and HT-JPEG 2000 encoding params
   // Optional JPEG progression order, in case of JPEG 2000 and HT-JPEG 2000 encoding.
-  progressionOrder: Lrcp,
+  progressionOrder: Jpeg2000ProgressionOrder.Lrcp,
   // Optional JPEG 2000 quality, in case of JPEG 2000 lossy encoding.
   // Sets the openjpeg tcp_rates[0] variable
   rate: 20

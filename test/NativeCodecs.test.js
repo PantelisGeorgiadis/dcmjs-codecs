@@ -136,6 +136,6 @@ describe('NativeCodecs', () => {
 
   it('should correctly encode and decode basic HtJpeg2000Lossless', () => {
     expect(NativeCodecs.isInitialized()).to.be.true;
-    // roundTripTest(NativeCodecs.encodeHtJpeg2000.name, NativeCodecs.decodeHtJpeg2000.name);
+    roundTripTest(NativeCodecs.encodeHtJpeg2000.name, NativeCodecs.decodeHtJpeg2000.name);
   }).timeout(20000);
 });

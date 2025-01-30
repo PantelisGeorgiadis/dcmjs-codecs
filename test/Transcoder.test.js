@@ -179,7 +179,7 @@ describe('Transcoder', () => {
     sinon.restore();
   });
 
-  it('should correctly perform basic trancoding', () => {
+  it('should correctly perform basic lossless transcoding', () => {
     const width = 3;
     const height = 3;
     // prettier-ignore
@@ -219,6 +219,63 @@ describe('Transcoder', () => {
     expect(Object.keys(elements).length).to.be.eq(Object.keys(transcodedElements).length);
     expect(Object.keys(elements)).to.have.members(Object.keys(transcodedElements));
   }).timeout(20000);
+
+  it('should correctly perform basic lossy transcoding', () => {
+    const width = 3;
+    const height = 3;
+    // prettier-ignore
+    const pixels = Uint8Array.from([
+      0x00, 0xff, 0x00,
+      0xff, 0x7f, 0xff,
+      0x00, 0xff, 0x00,
+    ]);
+
+    const elements = {
+      _vrMap: {
+        PixelData: 'OB',
+      },
+      BitsAllocated: 8,
+      BitsStored: 8,
+      Columns: width,
+      HighBit: 7,
+      NumberOfFrames: 1,
+      PhotometricInterpretation: PhotometricInterpretation.Monochrome2,
+      PixelData: [pixels.buffer],
+      PixelRepresentation: PixelRepresentation.Unsigned,
+      Rows: height,
+      SamplesPerPixel: 1,
+    };
+
+    const transcoder1 = new Transcoder(elements, TransferSyntax.ExplicitVRLittleEndian);
+    transcoder1.transcode(TransferSyntax.JpegBaselineProcess1);
+    const transcodedElements1 = transcoder1.getElements();
+    const transcodedTransferSyntaxUid1 = transcoder1.getTransferSyntaxUid();
+
+    expect(transcodedTransferSyntaxUid1).to.equal(TransferSyntax.JpegBaselineProcess1);
+    expect(transcodedElements1.LossyImageCompressionMethod).to.equal('ISO_10918_1');
+    expect(transcodedElements1.LossyImageCompression).to.equal('01');
+    expect(transcodedElements1.LossyImageCompressionRatio).not.to.be.undefined;
+
+    const transcoder2 = new Transcoder(transcodedElements1, transcodedTransferSyntaxUid1);
+    transcoder2.transcode(TransferSyntax.JpegLsLossy);
+    const transcodedElements2 = transcoder2.getElements();
+    const transcodedTransferSyntaxUid2 = transcoder2.getTransferSyntaxUid();
+
+    expect(transcodedTransferSyntaxUid2).to.equal(TransferSyntax.JpegLsLossy);
+    expect(transcodedElements2.LossyImageCompressionMethod).to.equal('ISO_14495_1');
+    expect(transcodedElements2.LossyImageCompression).to.equal('01');
+    expect(transcodedElements2.LossyImageCompressionRatio).not.to.be.undefined;
+
+    const transcoder3 = new Transcoder(transcodedElements2, transcodedTransferSyntaxUid2);
+    transcoder3.transcode(TransferSyntax.Jpeg2000Lossy);
+    const transcodedElements3 = transcoder3.getElements();
+    const transcodedTransferSyntaxUid3 = transcoder3.getTransferSyntaxUid();
+
+    expect(transcodedTransferSyntaxUid3).to.equal(TransferSyntax.Jpeg2000Lossy);
+    expect(transcodedElements3.LossyImageCompressionMethod).to.equal('ISO_15444_1');
+    expect(transcodedElements3.LossyImageCompression).to.equal('01');
+    expect(transcodedElements3.LossyImageCompressionRatio).not.to.be.undefined;
+  });
 
   it('should correctly encode and decode basic ImplicitVRLittleEndian [DICOM part10]', () => {
     expect(NativeCodecs.isInitialized()).to.be.true;

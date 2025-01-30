@@ -38,9 +38,9 @@ const TranscodeMap = [
   { syntax: TransferSyntax.JpegLsLossy,             lossy: true,  encapsulated: true,  bigEndian: false }, 
   { syntax: TransferSyntax.Jpeg2000Lossless,        lossy: false, encapsulated: true,  bigEndian: false }, 
   { syntax: TransferSyntax.Jpeg2000Lossy,           lossy: true,  encapsulated: true,  bigEndian: false }, 
-//  { syntax: TransferSyntax.HtJpeg2000Lossless,      lossy: false, encapsulated: true,  bigEndian: false }, 
-//  { syntax: TransferSyntax.HtJpeg2000LosslessRpcl,  lossy: false, encapsulated: true,  bigEndian: false }, 
-//  { syntax: TransferSyntax.HtJpeg2000Lossy,         lossy: true,  encapsulated: true,  bigEndian: false }, 
+  { syntax: TransferSyntax.HtJpeg2000Lossless,      lossy: false, encapsulated: true,  bigEndian: false }, 
+  { syntax: TransferSyntax.HtJpeg2000LosslessRpcl,  lossy: false, encapsulated: true,  bigEndian: false }, 
+  { syntax: TransferSyntax.HtJpeg2000Lossy,         lossy: true,  encapsulated: true,  bigEndian: false }, 
 ];
 Object.freeze(TranscodeMap);
 //#endregion

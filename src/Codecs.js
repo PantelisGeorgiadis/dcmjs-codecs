@@ -60,9 +60,9 @@ class Codec {
       [TransferSyntax.JpegLsLossy]: JpegLsLossyCodec,
       [TransferSyntax.Jpeg2000Lossless]: Jpeg2000LosslessCodec,
       [TransferSyntax.Jpeg2000Lossy]: Jpeg2000LossyCodec,
-      // [TransferSyntax.HtJpeg2000Lossless]: HtJpeg2000LosslessCodec,
-      // [TransferSyntax.HtJpeg2000LosslessRpcl]: HtJpeg2000LosslessRpclCodec,
-      // [TransferSyntax.HtJpeg2000Lossy]: HtJpeg2000LossyCodec,
+      [TransferSyntax.HtJpeg2000Lossless]: HtJpeg2000LosslessCodec,
+      [TransferSyntax.HtJpeg2000LosslessRpcl]: HtJpeg2000LosslessRpclCodec,
+      [TransferSyntax.HtJpeg2000Lossy]: HtJpeg2000LossyCodec,
     };
 
     const codec = codecMap[transferSyntaxUid];
@@ -486,7 +486,6 @@ class JpegBaseCodec extends Codec {
 //#endregion
 
 //#region JpegBaselineProcess1Codec
-/* c8 ignore start */
 class JpegBaselineProcess1Codec extends JpegBaseCodec {
   /**
    * Encodes DICOM image for JpegBaselineProcess1 transfer syntax.
@@ -519,10 +518,11 @@ class JpegBaselineProcess1Codec extends JpegBaseCodec {
    * @returns {Object} Updated DICOM image elements.
    */
   decode(elements, syntax, parameters = {}) {
+    parameters.convertColorspaceToRgb = true;
+
     return super.decode(elements, syntax, parameters);
   }
 }
-/* c8 ignore stop */
 //#endregion
 
 //#region JpegLosslessProcess14V1Codec
@@ -711,7 +711,6 @@ class JpegLsLosslessCodec extends JpegLsBaseCodec {
 //#endregion
 
 //#region JpegLsLossyCodec
-/* c8 ignore start */
 class JpegLsLossyCodec extends JpegLsBaseCodec {
   /**
    * Encodes DICOM image for JpegLsLossy transfer syntax.
@@ -739,7 +738,6 @@ class JpegLsLossyCodec extends JpegLsBaseCodec {
     return super.decode(elements, syntax, parameters);
   }
 }
-/* c8 ignore stop */
 //#endregion
 
 //#region Jpeg2000BaseCodec
@@ -928,7 +926,6 @@ class Jpeg2000LosslessCodec extends Jpeg2000BaseCodec {
 //#endregion
 
 //#region Jpeg2000LossyCodec
-/* c8 ignore start */
 class Jpeg2000LossyCodec extends Jpeg2000BaseCodec {
   /**
    * Encodes DICOM image for Jpeg2000Lossy transfer syntax.
@@ -956,7 +953,6 @@ class Jpeg2000LossyCodec extends Jpeg2000BaseCodec {
     return super.decode(elements, syntax, 'decodeJpeg2000', parameters);
   }
 }
-/* c8 ignore stop */
 //#endregion
 
 //#region HtJpeg2000LosslessCodec
@@ -1021,7 +1017,6 @@ class HtJpeg2000LosslessRpclCodec extends Jpeg2000BaseCodec {
 //#endregion
 
 //#region HtJpeg2000LossyCodec
-/* c8 ignore start */
 class HtJpeg2000LossyCodec extends Jpeg2000BaseCodec {
   /**
    * Encodes DICOM image for HtJpeg2000Lossy transfer syntax.
@@ -1049,7 +1044,6 @@ class HtJpeg2000LossyCodec extends Jpeg2000BaseCodec {
     return super.decode(elements, syntax, 'decodeHtJpeg2000', parameters);
   }
 }
-/* c8 ignore stop */
 //#endregion
 
 //#region Exports
