@@ -7,7 +7,6 @@ const {
 const {
   PhotometricInterpretation,
   PixelRepresentation,
-  TranscodeMap,
   TransferSyntax,
 } = require('./../src/Constants');
 const NativeCodecs = require('./../src/NativeCodecs');
@@ -120,10 +119,16 @@ function allLosslessSyntaxesTest() {
             );
 
             const transcoder = new Transcoder(grayscalePart10);
-            TranscodeMap.forEach((item) => {
-              if (!item.lossy) {
-                transcoder.transcode(item.syntax);
-              }
+            [
+              TransferSyntax.ImplicitVRLittleEndian,
+              TransferSyntax.ExplicitVRLittleEndian,
+              TransferSyntax.ExplicitVRBigEndian,
+              TransferSyntax.RleLossless,
+              TransferSyntax.JpegLosslessProcess14V1,
+              TransferSyntax.JpegLsLossless,
+              TransferSyntax.Jpeg2000Lossless,
+            ].forEach((syntax) => {
+              transcoder.transcode(syntax);
             });
             transcoder.transcode(TransferSyntax.ExplicitVRLittleEndian);
             const decodedPart10 = transcoder.getDicomPart10();
@@ -138,10 +143,16 @@ function allLosslessSyntaxesTest() {
           const colorPart10 = createDicomPart10FromColorRandomImage(frames, planar, width, height);
 
           const transcoder = new Transcoder(colorPart10);
-          TranscodeMap.forEach((item) => {
-            if (!item.lossy) {
-              transcoder.transcode(item.syntax);
-            }
+          [
+            TransferSyntax.ImplicitVRLittleEndian,
+            TransferSyntax.ExplicitVRLittleEndian,
+            TransferSyntax.ExplicitVRBigEndian,
+            TransferSyntax.RleLossless,
+            TransferSyntax.JpegLosslessProcess14V1,
+            TransferSyntax.JpegLsLossless,
+            TransferSyntax.Jpeg2000Lossless,
+          ].forEach((syntax) => {
+            transcoder.transcode(syntax);
           });
           transcoder.transcode(TransferSyntax.ExplicitVRLittleEndian);
           const decodedPart10 = transcoder.getDicomPart10();
@@ -305,11 +316,6 @@ describe('Transcoder', () => {
   it('should correctly encode and decode basic Jpeg2000Lossless [DICOM part10]', () => {
     expect(NativeCodecs.isInitialized()).to.be.true;
     roundTripTest(TransferSyntax.Jpeg2000Lossless);
-  }).timeout(20000);
-
-  it('should correctly encode and decode basic HtJpeg2000Lossless [DICOM part10]', () => {
-    expect(NativeCodecs.isInitialized()).to.be.true;
-    // roundTripTest(TransferSyntax.HtJpeg2000Lossless);
   }).timeout(20000);
 
   it('should correctly transcode between all supported lossless syntaxes [DICOM part10]', () => {

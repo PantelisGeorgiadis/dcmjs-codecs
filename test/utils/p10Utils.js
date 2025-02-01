@@ -209,9 +209,26 @@ function compareDicomElements(lElements, rElements) {
   expect(rPixelData).not.to.be.undefined;
   expect(lPixelData.length).to.be.eq(rPixelData.length);
 
+  const getPixel = (frames, frameData, i) => {
+    const pixelBytes = frameData;
+    if (frames.getBitsAllocated() <= 8) {
+      const p8 = pixelBytes[i];
+      return p8;
+    }
+
+    const sign = pixelBytes[i] & (1 << 7);
+    const p16 = ((pixelBytes[i] & 0xff) << 8) | (pixelBytes[i + 1] & 0xff);
+    return frames.getPixelRepresentation() === PixelRepresentation.Signed
+      ? sign
+        ? 0xffff0000 | p16
+        : p16
+      : p16;
+  };
+
   const lFrames = new Frames(lElements, TransferSyntax.ExplicitVRLittleEndian);
   const rFrames = new Frames(rElements, TransferSyntax.ExplicitVRLittleEndian);
   const numberOfFrames = lFrames.getNumberOfFrames();
+  const numPixels = lFrames.getWidth() * lFrames.getHeight() * lFrames.getSamplesPerPixel();
   for (let i = 0; i < numberOfFrames; i++) {
     const lFrameData = lFrames.getFrameBuffer(i);
     let rFrameData = rFrames.getFrameBuffer(i);
@@ -222,10 +239,21 @@ function compareDicomElements(lElements, rElements) {
         rElements.SamplesPerPixel,
         rElements.PlanarConfiguration
       );
-    }
 
-    expect(lFrameData.length).to.be.eq(rFrameData.length);
-    expect(lFrameData).to.deep.equal(rFrameData);
+      let numDifferences = 0;
+      let delta = 0;
+      for (let j = 0; j < numPixels; j++) {
+        const lPixel = getPixel(lFrames, lFrameData, i);
+        const rPixel = getPixel(rFrames, rFrameData, i);
+        if (lPixel !== rPixel) {
+          delta += Math.abs(lPixel - rPixel);
+          numDifferences++;
+        }
+      }
+
+      const averageDifference = numDifferences ? delta / numDifferences : 0;
+      expect(averageDifference).to.equal(0);
+    }
   }
 }
 

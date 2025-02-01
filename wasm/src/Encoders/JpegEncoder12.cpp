@@ -133,6 +133,5 @@ void EncodeJpeg12(CodecsContext *ctx, EncoderParameters *params) {
 
   auto const actualJpegDataSize = dest.data.size();
   SetEncodedBufferSize(ctx, actualJpegDataSize);
-  memcpy(GetEncodedBuffer(ctx), dest.data.data(),
-         actualJpegDataSize * sizeof(uint8_t));
+  memcpy(GetEncodedBuffer(ctx), dest.data.data(), actualJpegDataSize);
 }

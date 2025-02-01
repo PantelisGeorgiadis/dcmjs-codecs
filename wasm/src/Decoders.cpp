@@ -49,8 +49,8 @@ EMSCRIPTEN_KEEPALIVE void DecodeRle(CodecsContext *ctx,
   auto const pDest = GetDecodedBuffer(ctx);
 
   for (auto s = 0; s < decoder.GetNumberOfSegments(); s++) {
-    auto const sample = s / bytesAllocated;
-    auto const sabyte = s % bytesAllocated;
+    auto const sample = static_cast<size_t>(s) / bytesAllocated;
+    auto const sabyte = static_cast<size_t>(s) % bytesAllocated;
 
     auto pos =
         GetPlanarConfiguration(ctx) == +PlanarConfigurationEnum::Interleaved
@@ -117,8 +117,9 @@ EMSCRIPTEN_KEEPALIVE void DecodeJpegLs(CodecsContext *ctx,
 
   auto const bytesPerSample = (jlsParams.bitsPerSample / 8) +
                               (jlsParams.bitsPerSample % 8 == 0 ? 0 : 1);
-  SetDecodedBufferSize(ctx, jlsParams.width * jlsParams.height *
-                                jlsParams.components * bytesPerSample);
+  auto const decodedBufferSize = jlsParams.width * jlsParams.height *
+                                 jlsParams.components * bytesPerSample;
+  SetDecodedBufferSize(ctx, static_cast<size_t>(decodedBufferSize));
 
   retCode = JpegLsDecode(GetDecodedBuffer(ctx), GetDecodedBufferSize(ctx),
                          GetEncodedBuffer(ctx), GetEncodedBufferSize(ctx),
@@ -140,7 +141,7 @@ EMSCRIPTEN_KEEPALIVE void DecodeJpeg2000(CodecsContext *ctx,
 
   uint8_t buf12[12];
   auto codecFormat = OPJ_CODEC_FORMAT::OPJ_CODEC_UNKNOWN;
-  memcpy(buf12, GetEncodedBuffer(ctx), 12 * sizeof(uint8_t));
+  memcpy(buf12, GetEncodedBuffer(ctx), 12);
   if (memcmp(buf12, JP2_RFC3745_MAGIC, 12) == 0 ||
       memcmp(buf12, JP2_MAGIC, 4) == 0) {
     codecFormat = OPJ_CODEC_FORMAT::OPJ_CODEC_JP2;
@@ -203,14 +204,14 @@ EMSCRIPTEN_KEEPALIVE void DecodeJpeg2000(CodecsContext *ctx,
       auto pDest = GetDecodedBuffer(ctx);
       auto pSource = pImage->comps[0].data;
       for (auto i = numPixels; i; i--) {
-        *pDest++ = *pSource++;
+        *pDest++ = static_cast<uint8_t>(*pSource++);
       }
     }
     if (pImage->comps[0].prec > 8) {
       auto pDest = reinterpret_cast<uint16_t *>(GetDecodedBuffer(ctx));
       auto pSource = pImage->comps[0].data;
       for (auto i = numPixels; i; i--) {
-        *pDest++ = *pSource++;
+        *pDest++ = static_cast<uint16_t>(*pSource++);
       }
     }
   } else if (pImage->numcomps == 3) {
@@ -219,9 +220,9 @@ EMSCRIPTEN_KEEPALIVE void DecodeJpeg2000(CodecsContext *ctx,
     auto pSourceG = pImage->comps[1].data;
     auto pSourceB = pImage->comps[2].data;
     for (auto i = numPixels; i; i--) {
-      *pDest++ = *pSourceR++;
-      *pDest++ = *pSourceG++;
-      *pDest++ = *pSourceB++;
+      *pDest++ = static_cast<uint8_t>(*pSourceR++);
+      *pDest++ = static_cast<uint8_t>(*pSourceG++);
+      *pDest++ = static_cast<uint8_t>(*pSourceB++);
     }
   }
 
@@ -248,7 +249,7 @@ EMSCRIPTEN_KEEPALIVE void DecodeHtJpeg2000(CodecsContext *ctx,
 
   auto const siz = codestream.access_siz();
   ui32 bitDepths[4] = {0, 0, 0, 0};
-  for (auto c = 0; c < siz.get_num_components(); c++) {
+  for (auto c = 0u; c < siz.get_num_components(); c++) {
     bitDepths[c] = siz.get_bit_depth(c);
   }
 
@@ -268,28 +269,28 @@ EMSCRIPTEN_KEEPALIVE void DecodeHtJpeg2000(CodecsContext *ctx,
   decodedBuffer.resize(decodedBufferSize);
 
   ui32 comp_num;
-  for (auto y = 0; y < height; y++) {
+  for (auto y = 0u; y < height; y++) {
     auto const lineStart = y * width * GetSamplesPerPixel(ctx) * bytesPerPixel;
     if (GetSamplesPerPixel(ctx) == 1) {
       auto line = codestream.pull(comp_num);
       if (GetBitsAllocated(ctx) <= 8) {
-        auto dp = reinterpret_cast<uint8_t *>(&(decodedBuffer)[lineStart]);
+        auto dp = &decodedBuffer[lineStart];
         for (auto x = 0; x < width; x++) {
           auto const val = line->i32[x];
-          dp[x] = max(0, min(val, UCHAR_MAX));
+          dp[x] = static_cast<uint8_t>(max(0, min(val, UCHAR_MAX)));
         }
       } else {
         if (GetPixelRepresentation(ctx) == +PixelRepresentationEnum::Signed) {
           auto dp = reinterpret_cast<int16_t *>(&(decodedBuffer)[lineStart]);
           for (auto x = 0; x < width; x++) {
             auto const val = line->i32[x];
-            dp[x] = max(SHRT_MIN, min(val, SHRT_MAX));
+            dp[x] = static_cast<int16_t>(max(SHRT_MIN, min(val, SHRT_MAX)));
           }
         } else {
           auto dp = reinterpret_cast<uint16_t *>(&(decodedBuffer)[lineStart]);
-          for (auto x = 0; x < width; x++) {
+          for (auto x = 0u; x < width; x++) {
             auto const val = line->i32[x];
-            dp[x] = max(0, min(val, USHRT_MAX));
+            dp[x] = static_cast<uint16_t>(max(0, min(val, USHRT_MAX)));
           }
         }
       }
@@ -298,26 +299,27 @@ EMSCRIPTEN_KEEPALIVE void DecodeHtJpeg2000(CodecsContext *ctx,
         auto line = codestream.pull(comp_num);
         if (GetBitsAllocated(ctx) <= 8) {
           auto dp = &(decodedBuffer)[lineStart] + c;
-          for (auto x = 0; x < width; x++) {
+          for (auto x = 0u; x < width; x++) {
             auto const val = line->i32[x];
-            dp[x * GetSamplesPerPixel(ctx)] = max(0, min(val, UCHAR_MAX));
+            dp[x * GetSamplesPerPixel(ctx)] =
+                static_cast<uint8_t>(max(0, min(val, UCHAR_MAX)));
           }
         } else {
           if (GetPixelRepresentation(ctx) == +PixelRepresentationEnum::Signed) {
             auto dp =
-                reinterpret_cast<short *>(&(decodedBuffer)[lineStart]) + c;
-            for (auto x = 0; x < width; x++) {
+                reinterpret_cast<int16_t *>(&(decodedBuffer)[lineStart]) + c;
+            for (auto x = 0u; x < width; x++) {
               auto const val = line->i32[x];
               dp[x * GetSamplesPerPixel(ctx)] =
-                  max(SHRT_MIN, min(val, SHRT_MAX));
+                  static_cast<int16_t>(max(SHRT_MIN, min(val, SHRT_MAX)));
             }
           } else {
-            auto dp = reinterpret_cast<unsigned short *>(
-                          &(decodedBuffer)[lineStart]) +
-                      c;
-            for (auto x = 0; x < width; x++) {
+            auto dp =
+                reinterpret_cast<uint16_t *>(&(decodedBuffer)[lineStart]) + c;
+            for (auto x = 0u; x < width; x++) {
               auto const val = line->i32[x];
-              dp[x * GetSamplesPerPixel(ctx)] = max(0, min(val, USHRT_MAX));
+              dp[x * GetSamplesPerPixel(ctx)] =
+                  static_cast<uint16_t>(max(0, min(val, USHRT_MAX)));
             }
           }
         }
@@ -329,7 +331,7 @@ EMSCRIPTEN_KEEPALIVE void DecodeHtJpeg2000(CodecsContext *ctx,
 
   SetDecodedBufferSize(ctx, decodedBufferSize);
   auto pDest = GetDecodedBuffer(ctx);
-  memcpy(pDest, decodedBuffer.data(), decodedBufferSize * sizeof(uint8_t));
+  memcpy(pDest, decodedBuffer.data(), decodedBufferSize);
 
   DECODER_TRACE_EXIT(ctx);
 }

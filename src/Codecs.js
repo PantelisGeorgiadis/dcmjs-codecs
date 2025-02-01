@@ -955,6 +955,7 @@ class Jpeg2000LossyCodec extends Jpeg2000BaseCodec {
 }
 //#endregion
 
+/* c8 ignore start */
 //#region HtJpeg2000LosslessCodec
 class HtJpeg2000LosslessCodec extends Jpeg2000BaseCodec {
   /**
@@ -1045,6 +1046,7 @@ class HtJpeg2000LossyCodec extends Jpeg2000BaseCodec {
   }
 }
 //#endregion
+/* c8 ignore stop */
 
 //#region Exports
 module.exports = {

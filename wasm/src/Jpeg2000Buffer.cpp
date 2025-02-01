@@ -63,12 +63,12 @@ OPJ_OFF_T OpjSkipFromMemory(OPJ_OFF_T nBytes, Jpeg2000Buffer *pJpeg2000Buffer) {
     return static_cast<OPJ_SIZE_T>(-1);
   }
 
-  auto const newoffset = pJpeg2000Buffer->Offset + nBytes;
-  if (newoffset > pJpeg2000Buffer->SrcSize) {
+  auto const newOffset = pJpeg2000Buffer->Offset + nBytes;
+  if (newOffset > pJpeg2000Buffer->SrcSize) {
     nBytes = pJpeg2000Buffer->SrcSize - pJpeg2000Buffer->Offset;
     pJpeg2000Buffer->Offset = pJpeg2000Buffer->SrcSize;
   } else {
-    pJpeg2000Buffer->Offset = newoffset;
+    pJpeg2000Buffer->Offset = static_cast<OPJ_SIZE_T>(newOffset);
   }
 
   return nBytes;

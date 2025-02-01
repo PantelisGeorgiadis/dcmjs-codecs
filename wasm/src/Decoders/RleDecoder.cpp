@@ -97,7 +97,7 @@ void RleDecoder::Decode(uint8_t *buffer, const int32_t size,
             "RleDecoder::Decode::RLE literal run exceeds output buffer length");
       }
       if (sampleOffset == 1) {
-        memcpy(&buffer[pos], &rleData[i], length);
+        memcpy(&buffer[pos], &rleData[i], static_cast<size_t>(length));
         pos += length;
         i += length;
       } else {

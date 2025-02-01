@@ -57,11 +57,11 @@ void DecodeJpeg16(CodecsContext *ctx, DecoderParameters *params) {
         (*src.fill_input_buffer)(dinfo);
       }
       src.next_input_byte += nBytes;
-      src.bytes_in_buffer -= nBytes;
+      src.bytes_in_buffer -= static_cast<size_t>(nBytes);
     }
   };
   src.resync_to_restart = jpeg_resync_to_restart;
-  src.term_source = [](j_decompress_ptr dinfo) {};
+  src.term_source = [](j_decompress_ptr) {};
   src.bytes_in_buffer = GetEncodedBufferSize(ctx);
   src.next_input_byte = GetEncodedBuffer(ctx);
   dinfo.src = &src;
@@ -92,18 +92,20 @@ void DecodeJpeg16(CodecsContext *ctx, DecoderParameters *params) {
   auto const bytesAllocated =
       (GetBitsAllocated(ctx) / 8) + ((GetBitsAllocated(ctx) % 8 == 0) ? 0 : 1);
   auto const decodedBufferSize = dinfo.image_width * dinfo.image_height *
-                                 bytesAllocated * dinfo.num_components;
+                                 bytesAllocated *
+                                 static_cast<size_t>(dinfo.num_components);
   SetDecodedBufferSize(ctx, decodedBufferSize);
 
   jpeg_start_decompress(&dinfo);
 
   vector<JSAMPLE *> rows;
-  auto const scanlineBytes =
-      dinfo.image_width * bytesAllocated * dinfo.num_components;
+  auto const scanlineBytes = dinfo.image_width * bytesAllocated *
+                             static_cast<size_t>(dinfo.num_components);
   auto pDecodedBuffer = GetDecodedBuffer(ctx);
   while (dinfo.output_scanline < dinfo.output_height) {
-    auto const height = min<size_t>(dinfo.output_height - dinfo.output_scanline,
-                                    dinfo.rec_outbuf_height);
+    auto const height =
+        min<size_t>(dinfo.output_height - dinfo.output_scanline,
+                    static_cast<JDIMENSION>(dinfo.rec_outbuf_height));
     rows.resize(height);
     auto ptr = pDecodedBuffer;
     for (auto i = 0u; i < height; ++i, ptr += scanlineBytes) {

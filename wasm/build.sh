@@ -277,7 +277,6 @@ cpp_files=(
     "$WASM_SRC_DIR/Exception.cpp"
     "$WASM_SRC_DIR/Logging.cpp"
     "$WASM_SRC_DIR/Jpeg2000Buffer.cpp"
-    "$WASM_SRC_DIR/PlanarConfiguration.cpp"
     
     # decoders
     "$WASM_SRC_DIR/Decoders/JpegDecoder.cpp"
@@ -315,8 +314,6 @@ definitions=(
     "-DCHARLS_NO_DEPRECATED_WARNING"
     "-DWASM_CODECS_TRACE"
 )
-
-# --profiling-funcs -O3 -g -Werror -Wconversion
 
 mkdir -p ./bin
 emcc --no-entry -Werror -O3 -std=c++14 \

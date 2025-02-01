@@ -42,8 +42,8 @@ EMSCRIPTEN_KEEPALIVE void EncodeRle(CodecsContext *ctx,
   for (auto s = 0; s < numberOfSegments; s++) {
     encoder.NextSegment();
 
-    auto const sample = s / bytesAllocated;
-    auto const sabyte = s % bytesAllocated;
+    auto const sample = static_cast<size_t>(s) / bytesAllocated;
+    auto const sabyte = static_cast<size_t>(s) % bytesAllocated;
 
     auto pos =
         GetPlanarConfiguration(ctx) == +PlanarConfigurationEnum::Interleaved
@@ -135,7 +135,8 @@ EMSCRIPTEN_KEEPALIVE void EncodeJpegLs(CodecsContext *ctx,
   size_t actualJpegLsDataSize = 0;
 
   Buffer tmpBuffer;
-  tmpBuffer.Reset(estimatedJpegLsDataSize * 0.2 + estimatedJpegLsDataSize);
+  tmpBuffer.Reset(static_cast<size_t>(estimatedJpegLsDataSize * 0.2 +
+                                      estimatedJpegLsDataSize));
 
   char errorMsg[256 + 1] = {'\0'};
   auto const retCode = JpegLsEncode(
@@ -146,8 +147,7 @@ EMSCRIPTEN_KEEPALIVE void EncodeJpegLs(CodecsContext *ctx,
   }
 
   SetEncodedBufferSize(ctx, actualJpegLsDataSize);
-  memcpy(GetEncodedBuffer(ctx), tmpBuffer.GetData(),
-         actualJpegLsDataSize * sizeof(uint8_t));
+  memcpy(GetEncodedBuffer(ctx), tmpBuffer.GetData(), actualJpegLsDataSize);
 
   ENCODER_TRACE_EXIT(ctx);
 }
@@ -215,8 +215,12 @@ EMSCRIPTEN_KEEPALIVE void EncodeJpeg2000(CodecsContext *ctx,
   pImage->x0 = static_cast<OPJ_UINT32>(parameters.image_offset_x0);
   pImage->y0 = static_cast<OPJ_UINT32>(parameters.image_offset_y0);
   pImage->x1 =
-      pImage->x0 + (GetColumns(ctx) - 1) * parameters.subsampling_dx + 1;
-  pImage->y1 = pImage->y0 + (GetRows(ctx) - 1) * parameters.subsampling_dy + 1;
+      pImage->x0 +
+      (GetColumns(ctx) - 1) * static_cast<size_t>(parameters.subsampling_dx) +
+      1;
+  pImage->y1 =
+      pImage->y0 +
+      (GetRows(ctx) - 1) * static_cast<size_t>(parameters.subsampling_dy) + 1;
 
   auto const numPixels = GetColumns(ctx) * GetRows(ctx);
   if (pImage->numcomps == 1) {
@@ -269,7 +273,8 @@ EMSCRIPTEN_KEEPALIVE void EncodeJpeg2000(CodecsContext *ctx,
   size_t actualJpeg2000DataSize = 0;
 
   Buffer tmpBuffer;
-  tmpBuffer.Reset(0.1625 * estimatedJpeg2000DataSize + 2000);
+  tmpBuffer.Reset(
+      static_cast<size_t>(0.1625 * estimatedJpeg2000DataSize + 2000));
 
   Jpeg2000Buffer destinationBuffer(tmpBuffer.GetData(), tmpBuffer.GetSize());
   auto pStream = OpjCreateMemoryStream(&destinationBuffer,
@@ -310,8 +315,7 @@ EMSCRIPTEN_KEEPALIVE void EncodeJpeg2000(CodecsContext *ctx,
 
   actualJpeg2000DataSize = destinationBuffer.Offset;
   SetEncodedBufferSize(ctx, actualJpeg2000DataSize);
-  memcpy(GetEncodedBuffer(ctx), tmpBuffer.GetData(),
-         actualJpeg2000DataSize * sizeof(uint8_t));
+  memcpy(GetEncodedBuffer(ctx), tmpBuffer.GetData(), actualJpeg2000DataSize);
 
   ENCODER_TRACE_EXIT(ctx);
 }
@@ -334,8 +338,11 @@ EMSCRIPTEN_KEEPALIVE void EncodeHtJpeg2000(CodecsContext *ctx,
   siz.set_image_extent(point(GetColumns(ctx), GetRows(ctx)));
   siz.set_num_components(GetSamplesPerPixel(ctx));
   for (auto c = 0u; c < GetSamplesPerPixel(ctx); c++) {
-    siz.set_component(c, point(1, 1), GetBitsAllocated(ctx),
-                      GetPixelRepresentation(ctx) == 1 ? true : false);
+    siz.set_component(
+        c, point(1, 1), GetBitsAllocated(ctx),
+        GetPixelRepresentation(ctx) == +PixelRepresentationEnum::Signed
+            ? true
+            : false);
   }
   siz.set_image_offset(point(0, 0));
   siz.set_tile_size(size(0, 0));
@@ -350,13 +357,13 @@ EMSCRIPTEN_KEEPALIVE void EncodeHtJpeg2000(CodecsContext *ctx,
   cod.set_precinct_size(0, nullptr);
   cod.set_reversible(!params->Lossy);
 
-  auto numberOfDecompositions = 0;
+  auto numberOfDecompositions = 0u;
   auto tw = GetColumns(ctx);
   auto th = GetRows(ctx);
   while (tw > 64 && th > 64) {
     numberOfDecompositions++;
-    tw = ceil(tw / 2);
-    th = ceil(th / 2);
+    tw = static_cast<size_t>(ceil(tw / 2));
+    th = static_cast<size_t>(ceil(th / 2));
   }
   cod.set_num_decomposition(
       numberOfDecompositions > 6 ? 6 : numberOfDecompositions);
@@ -370,7 +377,7 @@ EMSCRIPTEN_KEEPALIVE void EncodeHtJpeg2000(CodecsContext *ctx,
   auto const bytesPerPixel = GetBitsAllocated(ctx) / 8;
   auto *cur_line = codestream.exchange(nullptr, next_comp);
   auto const height = siz.get_image_extent().y - siz.get_image_offset().y;
-  for (auto y = 0; y < height; y++) {
+  for (auto y = 0u; y < height; y++) {
     for (auto c = 0; c < siz.get_num_components(); c++) {
       auto dp = cur_line->i32;
       if (GetBitsAllocated(ctx) <= 8) {
@@ -404,9 +411,9 @@ EMSCRIPTEN_KEEPALIVE void EncodeHtJpeg2000(CodecsContext *ctx,
   codestream.flush();
 
   auto const actualHtJpeg2000DataSize = destinationBuffer.tell();
-  SetEncodedBufferSize(ctx, actualHtJpeg2000DataSize);
+  SetEncodedBufferSize(ctx, static_cast<size_t>(actualHtJpeg2000DataSize));
   memcpy(GetEncodedBuffer(ctx), destinationBuffer.get_data(),
-         actualHtJpeg2000DataSize * sizeof(uint8_t));
+         static_cast<size_t>(actualHtJpeg2000DataSize));
 
   codestream.close();
 
