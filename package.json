@@ -1,6 +1,6 @@
 {
   "name": "dcmjs-codecs",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "DICOM file and dataset transcoding for Node.js and browser using dcmjs",
   "main": "build/dcmjs-codecs.min.js",
   "module": "build/dcmjs-codecs.min.js",
@@ -45,7 +45,7 @@
   "funding": "https://github.com/PantelisGeorgiadis/dcmjs-codecs?sponsor=1",
   "homepage": "https://github.com/PantelisGeorgiadis/dcmjs-codecs",
   "dependencies": {
-    "dcmjs": "^0.38.0",
+    "dcmjs": "^0.38.1",
     "loglevel": "^1.9.2",
     "loglevel-plugin-prefix": "^0.8.4"
   },
