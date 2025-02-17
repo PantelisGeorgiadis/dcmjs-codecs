@@ -53,6 +53,7 @@ expectType<Uint8Array | undefined>(context.getDecodedBuffer());
 
 // NativeCodecs
 expectError(NativeCodecs.initializeAsync('string'));
+expectType<boolean>(NativeCodecs.isInitialized());
 expectType<Promise<void>>(
   NativeCodecs.initializeAsync({
     logCodecsInfo: true,
@@ -61,6 +62,7 @@ expectType<Promise<void>>(
   })
 );
 expectType<Promise<void>>(NativeCodecs.initializeAsync());
+expectType<void>(NativeCodecs.release());
 
 const context1 = new Context();
 expectType<Context>(NativeCodecs.decodeRle(context1));

@@ -225,7 +225,7 @@ class Context {
   /**
    * Validates the context values.
    * @method
-   * @throws Error if context values are invalid.
+   * @throws {Error} If context values are invalid.
    */
   validate() {
     if (!this.getWidth()) {

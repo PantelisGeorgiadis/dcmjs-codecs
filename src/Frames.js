@@ -203,7 +203,7 @@ class Frames {
    * @method
    * @param {number} frame - Frame index.
    * @returns {Uint8Array} Frame data as an array of unsigned byte values.
-   * @throws Error if requested frame is out of range, pixel data could not be extracted,
+   * @throws {Error} If requested frame is out of range, pixel data could not be extracted,
    * width/height/bits allocated/stored/photometric interpretation has an invalid value or
    * transfer syntax cannot be currently decoded.
    */
@@ -284,7 +284,7 @@ class Frames {
    * @param {number} pixelBuffers - Pixel data buffers.
    * @param {number} frame - Frame index.
    * @returns {Uint8Array} Frame data as an array of unsigned byte values.
-   * @throws Error if there are no fragmented pixel data or requested frame
+   * @throws {Error} If there are no fragmented pixel data or requested frame
    * is larger or equal to the pixel fragments number.
    */
   _getFrameFragments(pixelBuffers, frame) {
@@ -320,7 +320,7 @@ class FrameConverter {
    * @param {number} samplesPerPixel - Samples per pixel.
    * @param {number} oldPlanarConfiguration - Current planar configuration.
    * @returns {Uint8Array} Pixel data with converted planar configuration.
-   * @throws Error if bits allocated is not supported.
+   * @throws {Error} If bits allocated is not supported.
    */
   static changePlanarConfiguration(
     pixelData,

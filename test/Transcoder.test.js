@@ -188,6 +188,18 @@ describe('Transcoder', () => {
   });
   after(() => {
     sinon.restore();
+    NativeCodecs.release();
+  });
+
+  it('should throw for invalid transfer syntax', () => {
+    expect(() => {
+      const transcoder = new Transcoder({}, TransferSyntax.ExplicitVRLittleEndian);
+      transcoder.transcode(undefined);
+    }).to.throw();
+    expect(() => {
+      const transcoder = new Transcoder({}, TransferSyntax.ExplicitVRLittleEndian);
+      transcoder.transcode('1.2.3.4.5.6.7.8.9.0');
+    }).to.throw();
   });
 
   it('should correctly perform basic lossless transcoding', () => {

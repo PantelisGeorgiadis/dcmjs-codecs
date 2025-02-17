@@ -63,13 +63,22 @@ class NativeCodecs {
   }
 
   /**
+   * Releases native codecs.
+   * @method
+   * @static
+   */
+  static release() {
+    this.wasmApi = undefined;
+  }
+
+  /**
    * Decodes RLE frame.
    * @method
    * @static
    * @param {Context} context - Context object with encoded pixels data.
    * @param {Object} [parameters] - Decoder parameters.
    * @returns {Context} Context object with decoded pixels data.
-   * @throws Error if native codecs module is not initialized.
+   * @throws {Error} If native codecs module is not initialized.
    */
   static decodeRle(context, parameters) {
     this._throwIfCodecsModuleIsNotInitialized();
@@ -89,7 +98,7 @@ class NativeCodecs {
    * @param {Context} context - Context object with decoded pixels data.
    * @param {Object} [parameters] - Encoder parameters.
    * @returns {Context} Context object with encoded pixels data.
-   * @throws Error if native codecs module is not initialized.
+   * @throws {Error} If native codecs module is not initialized.
    */
   static encodeRle(context, parameters) {
     this._throwIfCodecsModuleIsNotInitialized();
@@ -110,7 +119,7 @@ class NativeCodecs {
    * @param {Object} [parameters] - Decoder parameters.
    * @param {boolean} [parameters.convertColorspaceToRgb] - Convert colorspace to RGB.
    * @returns {Context} Context object with decoded pixels data.
-   * @throws Error if native codecs module is not initialized.
+   * @throws {Error} If native codecs module is not initialized.
    */
   static decodeJpeg(context, parameters) {
     this._throwIfCodecsModuleIsNotInitialized();
@@ -141,7 +150,7 @@ class NativeCodecs {
    * @param {number} [parameters.pointTransform] - JPEG point transform.
    * Sets the libjpeg jpeg_simple_lossless point_transform input variable.
    * @returns {Context} Context object with encoded pixels data.
-   * @throws Error if native codecs module is not initialized.
+   * @throws {Error} If native codecs module is not initialized.
    */
   static encodeJpeg(context, parameters) {
     this._throwIfCodecsModuleIsNotInitialized();
@@ -161,7 +170,7 @@ class NativeCodecs {
    * @param {Context} context - Context object with encoded pixels data.
    * @param {Object} [parameters] - Decoder parameters.
    * @returns {Context} Context object with decoded pixels data.
-   * @throws Error if native codecs module is not initialized.
+   * @throws {Error} If native codecs module is not initialized.
    */
   static decodeJpegLs(context, parameters) {
     this._throwIfCodecsModuleIsNotInitialized();
@@ -184,7 +193,7 @@ class NativeCodecs {
    * @param {number} [parameters.allowedLossyError] - JPEG-LS allowed lossy error.
    * Sets the charls allowedLossyError variable.
    * @returns {Context} Context object with encoded pixels data.
-   * @throws Error if native codecs module is not initialized.
+   * @throws {Error} If native codecs module is not initialized.
    */
   static encodeJpegLs(context, parameters) {
     this._throwIfCodecsModuleIsNotInitialized();
@@ -204,7 +213,7 @@ class NativeCodecs {
    * @param {Context} context - Context object with encoded pixels data.
    * @param {Object} [parameters] - Decoder parameters.
    * @returns {Context} Context object with decoded pixels data.
-   * @throws Error if native codecs module is not initialized.
+   * @throws {Error} If native codecs module is not initialized.
    */
   static decodeJpeg2000(context, parameters) {
     this._throwIfCodecsModuleIsNotInitialized();
@@ -231,7 +240,7 @@ class NativeCodecs {
    * @param {number} [parameters.allowMct] - JPEG 2000 multiple component transform.
    * Sets the openjpeg tcp_mct variable.
    * @returns {Context} Context object with encoded pixels data.
-   * @throws Error if native codecs module is not initialized.
+   * @throws {Error} If native codecs module is not initialized.
    */
   static encodeJpeg2000(context, parameters) {
     this._throwIfCodecsModuleIsNotInitialized();
@@ -251,7 +260,7 @@ class NativeCodecs {
    * @param {Context} context - Context object with encoded pixels data.
    * @param {Object} [parameters] - Decoder parameters.
    * @returns {Context} Context object with decoded pixels data.
-   * @throws Error if native codecs module is not initialized.
+   * @throws {Error} If native codecs module is not initialized.
    */
   static decodeHtJpeg2000(context, parameters) {
     this._throwIfCodecsModuleIsNotInitialized();
@@ -274,7 +283,7 @@ class NativeCodecs {
    * @param {number} [parameters.progressionOrder] - JPEG 2000 progression order.
    * 0: LRCP, 1: RLCP, 2: RPCL, 3: PCRL, 4: CPRL.
    * @returns {Context} Context object with encoded pixels data.
-   * @throws Error if native codecs module is not initialized.
+   * @throws {Error} If native codecs module is not initialized.
    */
   static encodeHtJpeg2000(context, parameters) {
     this._throwIfCodecsModuleIsNotInitialized();
@@ -295,7 +304,7 @@ class NativeCodecs {
    * @private
    * @param {Context} context - Context object with encoded pixels data.
    * @returns {number} Decoder context pointer.
-   * @throws Error if native codecs module is not initialized or the context values are invalid.
+   * @throws {Error} If native codecs module is not initialized or the context values are invalid.
    */
   static _createDecoderContext(context) {
     this._throwIfCodecsModuleIsNotInitialized();
@@ -330,7 +339,7 @@ class NativeCodecs {
    * @private
    * @param {Context} context - Context object with encoded pixels data.
    * @returns {number} Encoder context pointer.
-   * @throws Error if native codecs module is not initialized or the context values are invalid.
+   * @throws {Error} If native codecs module is not initialized or the context values are invalid.
    */
   static _createEncoderContext(context) {
     this._throwIfCodecsModuleIsNotInitialized();
@@ -365,7 +374,7 @@ class NativeCodecs {
    * @private
    * @param {number} ctx - Decoder context pointer.
    * @returns {Context} Context object with decoded pixels data.
-   * @throws Error if native codecs module is not initialized.
+   * @throws {Error} If native codecs module is not initialized.
    */
   static _releaseDecoderContext(ctx) {
     this._throwIfCodecsModuleIsNotInitialized();
@@ -403,7 +412,7 @@ class NativeCodecs {
    * @private
    * @param {number} ctx - Encoder context pointer.
    * @returns {Context} Context object with encoded pixels data.
-   * @throws Error if native codecs module is not initialized.
+   * @throws {Error} If native codecs module is not initialized.
    */
   static _releaseEncoderContext(ctx) {
     this._throwIfCodecsModuleIsNotInitialized();
@@ -442,7 +451,7 @@ class NativeCodecs {
    * @param {Object} [parameters] - Decoder parameters.
    * @param {boolean} [parameters.convertColorspaceToRgb] - Convert colorspace to RGB.
    * @returns {number} Decoder parameters pointer.
-   * @throws Error if native codecs module is not initialized.
+   * @throws {Error} If native codecs module is not initialized.
    */
   static _createDecoderParameters(parameters = {}) {
     this._throwIfCodecsModuleIsNotInitialized();
@@ -470,7 +479,7 @@ class NativeCodecs {
    * @param {number} [parameters.rate] - JPEG 2000 compression rate.
    * @param {number} [parameters.allowMct] - JPEG 2000 compression rate.
    * @returns {number} Encoder parameters pointer.
-   * @throws Error if native codecs module is not initialized.
+   * @throws {Error} If native codecs module is not initialized.
    */
   static _createEncoderParameters(parameters = {}) {
     this._throwIfCodecsModuleIsNotInitialized();
@@ -504,7 +513,7 @@ class NativeCodecs {
    * @static
    * @private
    * @param {number} params - Decoder parameters pointer.
-   * @throws Error if native codecs module is not initialized.
+   * @throws {Error} If native codecs module is not initialized.
    */
   static _releaseDecoderParameters(params) {
     this._throwIfCodecsModuleIsNotInitialized();
@@ -518,7 +527,7 @@ class NativeCodecs {
    * @static
    * @private
    * @param {number} params - Encoder parameters pointer.
-   * @throws Error if native codecs module is not initialized.
+   * @throws {Error} If native codecs module is not initialized.
    */
   static _releaseEncoderParameters(params) {
     this._throwIfCodecsModuleIsNotInitialized();
@@ -544,7 +553,7 @@ class NativeCodecs {
          * @param {number} envOffset - The environment.
          * @param {number} envBufferOffset - The address of the buffer.
          * @returns {number} Error code.
-         * @throws Error if native codecs module is not initialized.
+         * @throws {Error} If native codecs module is not initialized.
          */
         environ_get: (envOffset, envBufferOffset) => {
           this._throwIfCodecsModuleIsNotInitialized();
@@ -571,7 +580,7 @@ class NativeCodecs {
          * @param {number} envCount - The number of environment variables.
          * @param {number} envBufferSize -The size of the environment variables buffer.
          * @returns {number} Error code.
-         * @throws Error if native codecs module is not initialized.
+         * @throws {Error} If native codecs module is not initialized.
          */
         environ_sizes_get: (envCount, envBufferSize) => {
           this._throwIfCodecsModuleIsNotInitialized();
@@ -595,7 +604,7 @@ class NativeCodecs {
          * Called on WebAssembly exit.
          * @method
          * @param {number} rval - The return value.
-         * @throws Error if WebAssembly module exits.
+         * @throws {Error} If WebAssembly module exits.
          */
         proc_exit: (rval) => {
           throw new Error(`WebAssembly module exited with return value ${rval}`);
@@ -609,7 +618,7 @@ class NativeCodecs {
          * @param {number} iovsLength - The length of the scatter vector.
          * @param {number} nWritten - The number of items written.
          * @returns {number} Error code.
-         * @throws Error if native codecs module is not initialized.
+         * @throws {Error} If native codecs module is not initialized.
          */
         fd_write: (fd, iovsOffset, iovsLength, nWritten) => {
           this._throwIfCodecsModuleIsNotInitialized();
@@ -708,7 +717,7 @@ class NativeCodecs {
          * @method
          * @param {number} pointer - The exception reason string pointer.
          * @param {number} len - The exception reason string length.
-         * @throws Error if native codecs module exception occurs.
+         * @throws {Error} If native codecs module exception occurs.
          */
         onCodecsException: (pointer, len) => {
           const str = this._wasmToJsString(pointer, len);
@@ -764,7 +773,7 @@ class NativeCodecs {
    * @param {number} pointer - String pointer.
    * @param {number} len - String length.
    * @returns {string} The string object.
-   * @throws Error if native codecs module is not initialized.
+   * @throws {Error} If native codecs module is not initialized.
    */
   static _wasmToJsString(pointer, len) {
     this._throwIfCodecsModuleIsNotInitialized();
@@ -796,7 +805,7 @@ class NativeCodecs {
    * @method
    * @static
    * @private
-   * @throws Error if native codecs module is not initialized.
+   * @throws {Error} If native codecs module is not initialized.
    */
   static _throwIfCodecsModuleIsNotInitialized() {
     if (!this.wasmApi) {

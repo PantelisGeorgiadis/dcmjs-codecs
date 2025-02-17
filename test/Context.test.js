@@ -66,6 +66,7 @@ describe('Context', () => {
     expect(context.getPhotometricInterpretation()).to.equal(attrs.photometricInterpretation);
     expect(context.getEncodedBuffer()).to.deep.equal(attrs.encodedBuffer);
     expect(context.getDecodedBuffer()).to.deep.equal(attrs.decodedBuffer);
+    expect(context.toString()).to.be.a('string');
   });
 
   it('should throw an error if width is invalid', function () {

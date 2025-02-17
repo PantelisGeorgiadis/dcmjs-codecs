@@ -1,6 +1,6 @@
 {
   "name": "dcmjs-codecs",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "DICOM file and dataset transcoding for Node.js and browser using dcmjs",
   "main": "build/dcmjs-codecs.min.js",
   "module": "build/dcmjs-codecs.min.js",

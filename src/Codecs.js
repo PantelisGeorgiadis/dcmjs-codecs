@@ -19,7 +19,7 @@ class Codec {
    * @param {string} syntax - DICOM image elements transfer syntax UID.
    * @param {Object} [parameters] - Encoder parameters.
    * @returns {Object} Updated DICOM image elements.
-   * @throws Error if encode is not implemented.
+   * @throws {Error} If encode is not implemented.
    */
   // eslint-disable-next-line no-unused-vars
   encode(elements, syntax, parameters = {}) {
@@ -33,7 +33,7 @@ class Codec {
    * @param {string} syntax - DICOM image elements transfer syntax UID.
    * @param {Object} [parameters] - Decoder parameters.
    * @returns {Object} Updated DICOM image elements.
-   * @throws Error if decode is not implemented.
+   * @throws {Error} If decode is not implemented.
    */
   // eslint-disable-next-line no-unused-vars
   decode(elements, syntax, parameters = {}) {
@@ -46,7 +46,7 @@ class Codec {
    * @static
    * @param {string} transferSyntaxUid - Transfer syntax UID.
    * @returns {Codec} Codec object.
-   * @throws Error if transfer syntax UID is not supported.
+   * @throws {Error} If transfer syntax UID is not supported.
    */
   static getCodec(transferSyntaxUid) {
     const codecMap = {

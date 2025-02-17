@@ -185,6 +185,16 @@ declare class NativeCodecs {
   }): Promise<void>;
 
   /**
+   * Checks if native codecs module is initialized.
+   */
+  static isInitialized(): boolean;
+
+  /**
+   * Releases native codecs.
+   */
+  static release(): void;
+
+  /**
    * Decodes RLE frame.
    */
   static decodeRle(context: Context, parameters?: Record<string, unknown>): Context;

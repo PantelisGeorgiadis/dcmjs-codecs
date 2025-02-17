@@ -27,6 +27,7 @@ describe('Frames', () => {
 
     const frames = new Frames(elements, TransferSyntax.Jpeg2000Lossless);
     expect(frames).to.be.an.instanceof(Frames);
+    expect(frames.toString()).to.be.a('string');
   });
 
   it('should initialize properties correctly', () => {

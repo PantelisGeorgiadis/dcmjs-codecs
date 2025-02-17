@@ -112,6 +112,7 @@ describe('NativeCodecs', () => {
   });
   after(() => {
     sinon.restore();
+    NativeCodecs.release();
   });
 
   it('should correctly encode and decode basic RleLossless', () => {
