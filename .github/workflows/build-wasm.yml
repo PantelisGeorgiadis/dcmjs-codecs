@@ -11,10 +11,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: mymindstorm/setup-emsdk@v13
+      - uses: mymindstorm/setup-emsdk@v14
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Make build script executable
         working-directory: ./wasm
         run: chmod +x ./build.sh

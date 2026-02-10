@@ -249,6 +249,19 @@ declare class NativeCodecs {
     context: Context,
     parameters?: { lossy?: boolean; progressionOrder?: number; rate?: number }
   ): Context;
+
+  /**
+   *  Decodes High-Throughput JPEG2000 frame (lossless or lossy).
+   */
+  static decodeHtJpeg2000(context: Context, parameters?: Record<string, unknown>): Context;
+
+  /**
+   * Encodes High-Throughput JPEG2000 frame (lossless or lossy).
+   */
+  static encodeHtJpeg2000(
+    context: Context,
+    parameters?: { lossy?: boolean; progressionOrder?: number }
+  ): Context;
 }
 
 declare class Transcoder {

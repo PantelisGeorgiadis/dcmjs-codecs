@@ -82,6 +82,10 @@ expectError(NativeCodecs.decodeJpeg2000('1'));
 expectError(NativeCodecs.decodeJpeg2000(context1, '2'));
 expectError(NativeCodecs.encodeJpeg2000('1'));
 expectError(NativeCodecs.encodeJpeg2000(context1, '2'));
+expectError(NativeCodecs.decodeHtJpeg2000('1'));
+expectError(NativeCodecs.decodeHtJpeg2000(context1, '2'));
+expectError(NativeCodecs.encodeHtJpeg2000('1'));
+expectError(NativeCodecs.encodeHtJpeg2000(context1, '2'));
 
 // Transcoder
 expectError(new Transcoder(1));
