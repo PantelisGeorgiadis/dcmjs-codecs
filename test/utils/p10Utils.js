@@ -56,7 +56,7 @@ function createDicomPart10FromGrayscaleRandomImage(
       TransferSyntaxUID: TransferSyntax.ExplicitVRLittleEndian,
     },
     _vrMap: {
-      PixelData: this.bits === 16 ? 'OW' : 'OB',
+      PixelData: bits === 16 ? 'OW' : 'OB',
     },
     BitsAllocated: bits,
     BitsStored: bits,
@@ -239,21 +239,21 @@ function compareDicomElements(lElements, rElements) {
         rElements.SamplesPerPixel,
         rElements.PlanarConfiguration
       );
-
-      let numDifferences = 0;
-      let delta = 0;
-      for (let j = 0; j < numPixels; j++) {
-        const lPixel = getPixel(lFrames, lFrameData, i);
-        const rPixel = getPixel(rFrames, rFrameData, i);
-        if (lPixel !== rPixel) {
-          delta += Math.abs(lPixel - rPixel);
-          numDifferences++;
-        }
-      }
-
-      const averageDifference = numDifferences ? delta / numDifferences : 0;
-      expect(averageDifference).to.equal(0);
     }
+
+    let numDifferences = 0;
+    let delta = 0;
+    for (let j = 0; j < numPixels; j++) {
+      const lPixel = getPixel(lFrames, lFrameData, i);
+      const rPixel = getPixel(rFrames, rFrameData, i);
+      if (lPixel !== rPixel) {
+        delta += Math.abs(lPixel - rPixel);
+        numDifferences++;
+      }
+    }
+
+    const averageDifference = numDifferences ? delta / numDifferences : 0;
+    expect(averageDifference).to.equal(0);
   }
 }
 
