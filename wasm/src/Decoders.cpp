@@ -16,6 +16,7 @@
 #include "Decoders/JpegDecoder12.h"
 #include "Decoders/JpegDecoder16.h"
 #include "Decoders/JpegDecoder8.h"
+#include "Decoders/JpegXlDecoder.h"
 #include "Decoders/RleDecoder.h"
 #include "Exception.h"
 #include "Jpeg2000Buffer.h"
@@ -332,6 +333,17 @@ EMSCRIPTEN_KEEPALIVE void DecodeHtJpeg2000(CodecsContext *ctx,
   SetDecodedBufferSize(ctx, decodedBufferSize);
   auto pDest = GetDecodedBuffer(ctx);
   memcpy(pDest, decodedBuffer.data(), decodedBufferSize);
+
+  DECODER_TRACE_EXIT(ctx);
+}
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+EMSCRIPTEN_KEEPALIVE void DecodeJpegXl(CodecsContext *ctx,
+                                       DecoderParameters *params) {
+  DECODER_TRACE_ENTRY(ctx, params);
+
+  DecodeJpegXlImpl(ctx, params);
 
   DECODER_TRACE_EXIT(ctx);
 }

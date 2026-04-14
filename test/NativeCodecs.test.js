@@ -72,6 +72,12 @@ describe('Uninitialized NativeCodecs', () => {
     expect(() => {
       NativeCodecs.encodeJpeg2000(undefined, undefined);
     }).to.throw();
+    expect(() => {
+      NativeCodecs.encodeHtJpegXl(undefined, undefined);
+    }).to.throw();
+    expect(() => {
+      NativeCodecs.encodeHtJpeg2000(undefined, undefined);
+    }).to.throw();
 
     expect(() => {
       NativeCodecs.decodeRle(undefined, undefined);
@@ -83,7 +89,13 @@ describe('Uninitialized NativeCodecs', () => {
       NativeCodecs.decodeJpegLs(undefined, undefined);
     }).to.throw();
     expect(() => {
+      NativeCodecs.decodeJpegXl(undefined, undefined);
+    }).to.throw();
+    expect(() => {
       NativeCodecs.decodeJpeg2000(undefined, undefined);
+    }).to.throw();
+    expect(() => {
+      NativeCodecs.decodeHtJpeg2000(undefined, undefined);
     }).to.throw();
   });
 });
@@ -133,5 +145,15 @@ describe('NativeCodecs', () => {
   it('should correctly encode and decode basic Jpeg2000Lossless', () => {
     expect(NativeCodecs.isInitialized()).to.be.true;
     roundTripTest(NativeCodecs.encodeJpeg2000.name, NativeCodecs.decodeJpeg2000.name);
+  }).timeout(20000);
+
+  it('should correctly encode and decode basic JpegXlLossless', () => {
+    expect(NativeCodecs.isInitialized()).to.be.true;
+    roundTripTest(NativeCodecs.encodeJpegXl.name, NativeCodecs.decodeJpegXl.name);
+  }).timeout(20000);
+
+  it('should correctly encode and decode basic HtJpeg2000Lossless', () => {
+    expect(NativeCodecs.isInitialized()).to.be.true;
+    roundTripTest(NativeCodecs.encodeHtJpeg2000.name, NativeCodecs.decodeHtJpeg2000.name);
   }).timeout(20000);
 });

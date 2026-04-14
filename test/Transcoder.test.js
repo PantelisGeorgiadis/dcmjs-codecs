@@ -151,6 +151,8 @@ function allLosslessSyntaxesTest() {
             TransferSyntax.JpegLosslessProcess14V1,
             TransferSyntax.JpegLsLossless,
             TransferSyntax.Jpeg2000Lossless,
+            TransferSyntax.JpegXlLossless,
+            TransferSyntax.HtJpeg2000Lossless,
           ].forEach((syntax) => {
             transcoder.transcode(syntax);
           });
@@ -328,6 +330,16 @@ describe('Transcoder', () => {
   it('should correctly encode and decode basic Jpeg2000Lossless [DICOM part10]', () => {
     expect(NativeCodecs.isInitialized()).to.be.true;
     roundTripTest(TransferSyntax.Jpeg2000Lossless);
+  }).timeout(20000);
+
+  it('should correctly encode and decode basic JpegXlLossless [DICOM part10]', () => {
+    expect(NativeCodecs.isInitialized()).to.be.true;
+    roundTripTest(TransferSyntax.JpegXlLossless);
+  }).timeout(20000);
+
+  it('should correctly encode and decode basic HtJpeg2000Lossless [DICOM part10]', () => {
+    expect(NativeCodecs.isInitialized()).to.be.true;
+    roundTripTest(TransferSyntax.HtJpeg2000Lossless);
   }).timeout(20000);
 
   it('should correctly transcode between all supported lossless syntaxes [DICOM part10]', () => {

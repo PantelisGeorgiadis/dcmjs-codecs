@@ -254,6 +254,47 @@ class NativeCodecs {
   }
 
   /**
+   * Decodes JPEG-XL frame (lossless or lossy).
+   * @method
+   * @static
+   * @param {Context} context - Context object with encoded pixels data.
+   * @param {Object} [parameters] - Decoder parameters.
+   * @returns {Context} Context object with decoded pixels data.
+   * @throws {Error} If native codecs module is not initialized.
+   */
+  static decodeJpegXl(context, parameters) {
+    this._throwIfCodecsModuleIsNotInitialized();
+
+    const ctx = this._createDecoderContext(context);
+    const params = this._createDecoderParameters(parameters);
+    this.wasmApi.wasmDecodeJpegXl(ctx, params);
+    this._releaseDecoderParameters(params);
+
+    return this._releaseDecoderContext(ctx);
+  }
+
+  /**
+   * Encodes JPEG-XL frame (lossless or lossy).
+   * @method
+   * @static
+   * @param {Context} context - Context object with decoded pixels data.
+   * @param {Object} [parameters] - Encoder parameters.
+   * @param {boolean} [parameters.lossy] - Lossy encoding.
+   * @returns {Context} Context object with encoded pixels data.
+   * @throws {Error} If native codecs module is not initialized.
+   */
+  static encodeJpegXl(context, parameters) {
+    this._throwIfCodecsModuleIsNotInitialized();
+
+    const ctx = this._createEncoderContext(context);
+    const params = this._createEncoderParameters(parameters);
+    this.wasmApi.wasmEncodeJpegXl(ctx, params);
+    this._releaseEncoderParameters(params);
+
+    return this._releaseEncoderContext(ctx);
+  }
+
+  /**
    * Decodes High-Throughput JPEG2000 frame (lossless or lossy).
    * @method
    * @static
@@ -608,6 +649,29 @@ class NativeCodecs {
          */
         proc_exit: (rval) => {
           throw new Error(`WebAssembly module exited with return value ${rval}`);
+        },
+
+        /*
+         * Gets the current time.
+         * @method
+         * @param {number} clockId - The clock ID.
+         * @param {number} resOut - The memory location to write the time value.
+         * @returns {number} Error code.
+         * @throws {Error} If native codecs module is not initialized.
+         */
+        // eslint-disable-next-line no-unused-vars
+        clock_time_get: (clockId, resOut) => {
+          this._throwIfCodecsModuleIsNotInitialized();
+
+          if (clockId !== 0) {
+            return ErrNo.InvalidParameter;
+          }
+
+          const memoryView = new DataView(this.wasmApi.wasmMemory.buffer);
+          memoryView.setUint32(resOut, 1000000.0 % 0x100000000, true);
+          memoryView.setUint32(resOut + 4, 1000000.0 / 0x100000000, true);
+
+          return ErrNo.Success;
         },
 
         /**

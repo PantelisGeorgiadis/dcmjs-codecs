@@ -16,7 +16,7 @@ const TransferSyntax = {
   Jpeg2000Lossy: '1.2.840.10008.1.2.4.91',
   JpegXlLossless: '1.2.840.10008.1.2.4.110',
   JpegXlRecompression: '1.2.840.10008.1.2.4.111',
-  JpegXl: '1.2.840.10008.1.2.4.112',
+  JpegXlLossy: '1.2.840.10008.1.2.4.112',
   HtJpeg2000Lossless: '1.2.840.10008.1.2.4.201',
   HtJpeg2000LosslessRpcl: '1.2.840.10008.1.2.4.202',
   HtJpeg2000Lossy: '1.2.840.10008.1.2.4.203',
@@ -41,6 +41,8 @@ const TranscodeMap = [
   { syntax: TransferSyntax.JpegLsLossy,             lossy: true,  encapsulated: true,  bigEndian: false }, 
   { syntax: TransferSyntax.Jpeg2000Lossless,        lossy: false, encapsulated: true,  bigEndian: false }, 
   { syntax: TransferSyntax.Jpeg2000Lossy,           lossy: true,  encapsulated: true,  bigEndian: false }, 
+  { syntax: TransferSyntax.JpegXlLossless,          lossy: false, encapsulated: true,  bigEndian: false },
+  { syntax: TransferSyntax.JpegXlLossy,             lossy: true,  encapsulated: true,  bigEndian: false },
   { syntax: TransferSyntax.HtJpeg2000Lossless,      lossy: false, encapsulated: true,  bigEndian: false }, 
   { syntax: TransferSyntax.HtJpeg2000LosslessRpcl,  lossy: false, encapsulated: true,  bigEndian: false }, 
   { syntax: TransferSyntax.HtJpeg2000Lossy,         lossy: true,  encapsulated: true,  bigEndian: false }, 
@@ -67,6 +69,7 @@ const PhotometricInterpretation = {
   Cmyk: 'CMYK',
   Argb: 'ARGB',
   Hsv: 'HSV',
+  Xyb: 'XYB',
 };
 Object.freeze(PhotometricInterpretation);
 //#endregion
@@ -126,6 +129,7 @@ Object.freeze(StorageClass);
 const ErrNo = {
   Success: 0,
   BadFileDescriptor: 8,
+  InvalidParameter: 28,
 };
 Object.freeze(ErrNo);
 //#endregion
