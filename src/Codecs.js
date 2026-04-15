@@ -114,6 +114,20 @@ class Codec {
         );
       }
 
+      if (parameters.shiftSignedPixels) {
+        const src = new Uint16Array(
+          frameData.buffer,
+          frameData.byteOffset,
+          frameData.byteLength / 2
+        );
+        const shifted = new Uint16Array(src.length);
+        const offset = 1 << (elements.BitsAllocated - 1);
+        for (let j = 0; j < src.length; j++) {
+          shifted[j] = src[j] + offset;
+        }
+        frameData = new Uint8Array(shifted.buffer);
+      }
+
       const context = Context.fromDicomElements(elements);
       context.setDecodedBuffer(frameData);
 
@@ -1101,6 +1115,17 @@ class JpegXlBaseCodec extends Codec {
       encoderParameters.updatePlanarConfiguration = true;
     }
 
+    // Handle signedness of pixel data for lossy encoding
+    if (
+      encoderParameters.lossy !== undefined &&
+      encoderParameters.lossy &&
+      elements.BitsAllocated > 8 &&
+      elements.PixelRepresentation === 1
+    ) {
+      encoderParameters.shiftSignedPixels = true;
+      elements.PixelRepresentation = 0;
+    }
+
     // Perform pixel transformation and encoding
     const updatedElements = super._baseEncodeImpl(
       elements,
@@ -1117,17 +1142,32 @@ class JpegXlBaseCodec extends Codec {
       updatedElements.PlanarConfiguration = PlanarConfiguration.Interleaved;
     }
 
+    // Update pixel representation and rescale intercept to account for the shift
+    if (encoderParameters.shiftSignedPixels !== undefined && encoderParameters.shiftSignedPixels) {
+      updatedElements.PixelRepresentation = 0;
+      const offset = 1 << (updatedElements.BitsAllocated - 1);
+      const rescaleSlope =
+        updatedElements.RescaleSlope !== undefined ? Number(updatedElements.RescaleSlope) : 1;
+      const rescaleIntercept =
+        updatedElements.RescaleIntercept !== undefined
+          ? Number(updatedElements.RescaleIntercept)
+          : 0;
+      updatedElements.RescaleIntercept = rescaleIntercept - offset * rescaleSlope;
+    }
+
     // Update photometric interpretation
     if (
-      elements.PhotometricInterpretation === PhotometricInterpretation.Rgb ||
-      elements.PhotometricInterpretation == PhotometricInterpretation.YbrFull ||
-      elements.PhotometricInterpretation == PhotometricInterpretation.YbrFull422
+      updatedElements.PhotometricInterpretation == PhotometricInterpretation.YbrIct ||
+      updatedElements.PhotometricInterpretation == PhotometricInterpretation.Xyb
     ) {
-      if (encoderParameters.lossy !== undefined && encoderParameters.lossy) {
-        updatedElements.PhotometricInterpretation = PhotometricInterpretation.Rgb;
-      } else {
-        updatedElements.PhotometricInterpretation = PhotometricInterpretation.Rgb;
-      }
+      updatedElements.PhotometricInterpretation = PhotometricInterpretation.Rgb;
+    }
+    if (
+      updatedElements.PhotometricInterpretation == PhotometricInterpretation.YbrFull422 ||
+      updatedElements.PhotometricInterpretation == PhotometricInterpretation.YbrPartial422 ||
+      updatedElements.PhotometricInterpretation == PhotometricInterpretation.YbrFull
+    ) {
+      updatedElements.PhotometricInterpretation = PhotometricInterpretation.Rgb;
     }
 
     // Measure new size

@@ -19,7 +19,8 @@ const expect = chai.expect;
 /**
  * Creates a DICOM Part 10 file from a random grayscale image.
  * @param {number} frames - Number of frames.
- * @param {number} bits - Number of bits per pixel.
+ * @param {number} bitsAllocated - Number of bits per pixel.
+ * @param {number} bitsStored - Number of bits stored per pixel.
  * @param {boolean} signed - Whether the pixel data is signed.
  * @param {number} width - Image width.
  * @param {number} height - Image height.
@@ -28,13 +29,14 @@ const expect = chai.expect;
  */
 function createDicomPart10FromGrayscaleRandomImage(
   frames,
-  bits,
+  bitsAllocated,
+  bitsStored,
   signed,
   width,
   height,
   writeOptions = {}
 ) {
-  const randomImage = new RandomGrayscaleImageBuffer(bits, signed, width, height);
+  const randomImage = new RandomGrayscaleImageBuffer(bitsStored, signed, width, height);
 
   const pixelDataArrayBuffers = [];
   for (let i = 0; i < frames; i++) {
@@ -56,12 +58,12 @@ function createDicomPart10FromGrayscaleRandomImage(
       TransferSyntaxUID: TransferSyntax.ExplicitVRLittleEndian,
     },
     _vrMap: {
-      PixelData: bits === 16 ? 'OW' : 'OB',
+      PixelData: bitsAllocated === 16 || bitsAllocated === 12 ? 'OW' : 'OB',
     },
-    BitsAllocated: bits,
-    BitsStored: bits,
+    BitsAllocated: bitsAllocated,
+    BitsStored: bitsStored,
     Columns: width,
-    HighBit: bits - 1,
+    HighBit: bitsStored - 1,
     NumberOfFrames: frames,
     PhotometricInterpretation: PhotometricInterpretation.Monochrome2,
     PixelData: [combinedPixelDataArrayBuffer],

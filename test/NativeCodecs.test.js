@@ -34,11 +34,16 @@ function getRandomDims() {
 function roundTripTest(encodeFn, decodeFn, parameters) {
   getRandomDims().forEach((width) => {
     getRandomDims().forEach((height) => {
-      [8, 16].forEach((bits) => {
+      [
+        { bitsAllocated: 8, bitsStored: 8 },
+        { bitsAllocated: 16, bitsStored: 12 },
+        { bitsAllocated: 16, bitsStored: 16 },
+      ].forEach((bits) => {
         [true, false].forEach((signed) => {
           const grayscaleContext = createContextFromGrayscaleRandomImage(
-            bits,
-            bits === 16 ? signed : false,
+            bits.bitsAllocated,
+            bits.bitsStored,
+            bits.bitsAllocated === 16 ? signed : false,
             width,
             height
           );
@@ -73,7 +78,7 @@ describe('Uninitialized NativeCodecs', () => {
       NativeCodecs.encodeJpeg2000(undefined, undefined);
     }).to.throw();
     expect(() => {
-      NativeCodecs.encodeHtJpegXl(undefined, undefined);
+      NativeCodecs.encodeJpegXl(undefined, undefined);
     }).to.throw();
     expect(() => {
       NativeCodecs.encodeHtJpeg2000(undefined, undefined);

@@ -19,7 +19,7 @@ BETTER_ENUM(PlanarConfigurationEnum, size_t, Interleaved = 0, Planar)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 BETTER_ENUM(PhotometricInterpretationEnum, size_t, Monochrome1 = 0, Monochrome2,
             PaletteColor, Rgb, YbrFull, YbrFull422, YbrPartial422,
-            YbrPartial420, YbrIct, YbrRct, Cmyk, Argb, Hsv)
+            YbrPartial420, YbrIct, YbrRct, Cmyk, Argb, Hsv, Xyb)
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

@@ -11,21 +11,22 @@ const expect = chai.expect;
 
 /**
  * Creates a context from a random grayscale image.
- * @param {number} bits - Number of bits per pixel.
+ * @param {number} bitsAllocated - Number of bits allocated per pixel.
+ * @param {number} bitsStored - Number of bits stored per pixel.
  * @param {boolean} sign - Whether the pixel data is signed.
  * @param {number} width - Image width.
  * @param {number} height - Image height.
  * @returns {Context} - Context.
  */
-function createContextFromGrayscaleRandomImage(bits, sign, width, height) {
-  const randomImage = new RandomGrayscaleImageBuffer(bits, sign, width, height);
+function createContextFromGrayscaleRandomImage(bitsAllocated, bitsStored, sign, width, height) {
+  const randomImage = new RandomGrayscaleImageBuffer(bitsStored, sign, width, height);
   randomImage.random();
 
   return new Context({
     width,
     height,
-    bitsAllocated: bits,
-    bitsStored: bits,
+    bitsAllocated: bitsAllocated,
+    bitsStored: bitsStored,
     samplesPerPixel: 1,
     pixelRepresentation: sign ? PixelRepresentation.Signed : PixelRepresentation.Unsigned,
     photometricInterpretation: PhotometricInterpretation.Monochrome2,

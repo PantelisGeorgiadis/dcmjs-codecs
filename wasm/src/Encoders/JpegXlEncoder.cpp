@@ -77,7 +77,12 @@ void EncodeJpegXlImpl(CodecsContext* ctx, EncoderParameters* params) {
     }
   } else {
     auto const quality = static_cast<float>(params->Quality);
-    auto const distance = JxlEncoderDistanceFromQuality(quality);
+    auto distance = JxlEncoderDistanceFromQuality(quality);
+    if (bitsStored < bitsAllocated) {
+      auto const maxStored = static_cast<float>((1u << bitsStored) - 1u);
+      auto const maxAllocated = static_cast<float>((1u << bitsAllocated) - 1u);
+      distance *= maxStored / maxAllocated;
+    }
     if (JxlEncoderSetFrameDistance(frameSettings, distance) !=
         JXL_ENC_SUCCESS) {
       JxlEncoderDestroy(enc);

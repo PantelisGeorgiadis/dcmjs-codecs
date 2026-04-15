@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "Exception.h"
+#include "jxl/cms.h"
 #include "jxl/decode.h"
 #include "jxl/types.h"
 
@@ -21,8 +22,14 @@ void DecodeJpegXlImpl(CodecsContext* ctx, DecoderParameters* params) {
         "DecodeJpegXl::JxlDecoderCreate::Failed to create decoder");
   }
 
-  if (JxlDecoderSubscribeEvents(dec, JXL_DEC_BASIC_INFO | JXL_DEC_FULL_IMAGE) !=
-      JXL_DEC_SUCCESS) {
+  if (JxlDecoderSetCms(dec, *JxlGetDefaultCms()) != JXL_DEC_SUCCESS) {
+    JxlDecoderDestroy(dec);
+    ThrowCodecsException("DecodeJpegXl::JxlDecoderSetCms::Failed");
+  }
+
+  if (JxlDecoderSubscribeEvents(dec,
+                                JXL_DEC_BASIC_INFO | JXL_DEC_COLOR_ENCODING |
+                                    JXL_DEC_FULL_IMAGE) != JXL_DEC_SUCCESS) {
     JxlDecoderDestroy(dec);
     ThrowCodecsException("DecodeJpegXl::JxlDecoderSubscribeEvents::Failed");
   }
@@ -35,6 +42,7 @@ void DecodeJpegXlImpl(CodecsContext* ctx, DecoderParameters* params) {
 
   JxlPixelFormat pixelFormat = {};
   vector<uint8_t> decodedPixels;
+  size_t samplesPerPixel = 0;
 
   for (;;) {
     auto const status = JxlDecoderProcessInput(dec);
@@ -58,57 +66,33 @@ void DecodeJpegXlImpl(CodecsContext* ctx, DecoderParameters* params) {
         ThrowCodecsException("DecodeJpegXl::JxlDecoderGetBasicInfo::Failed");
       }
 
-      auto const width = static_cast<size_t>(basicInfo.xsize);
-      auto const height = static_cast<size_t>(basicInfo.ysize);
       auto const bitsStored = static_cast<size_t>(basicInfo.bits_per_sample);
       auto const bitsAllocated = bitsStored <= 8 ? 8u : 16u;
-      auto const samplesPerPixel =
-          static_cast<size_t>(basicInfo.num_color_channels);
-
-      if (GetColumns(ctx) != 0) {
-        if (GetColumns(ctx) != width) {
-          JxlDecoderDestroy(dec);
-          ThrowCodecsException("DecodeJpegXl::Decoded width mismatch");
-        }
-      } else {
-        SetColumns(ctx, width);
-      }
-      if (GetRows(ctx) != 0) {
-        if (GetRows(ctx) != height) {
-          JxlDecoderDestroy(dec);
-          ThrowCodecsException("DecodeJpegXl::Decoded height mismatch");
-        }
-      } else {
-        SetRows(ctx, height);
-      }
-      if (GetSamplesPerPixel(ctx) != 0) {
-        if (GetSamplesPerPixel(ctx) != samplesPerPixel) {
-          JxlDecoderDestroy(dec);
-          ThrowCodecsException(
-              "DecodeJpegXl::Decoded samples per pixel mismatch");
-        }
-      } else {
-        SetSamplesPerPixel(ctx, samplesPerPixel);
-      }
-      if (GetBitsAllocated(ctx) != 0) {
-        if (GetBitsAllocated(ctx) != bitsAllocated) {
-          JxlDecoderDestroy(dec);
-          ThrowCodecsException(
-              "DecodeJpegXl::Decoded bits allocated mismatch");
-        }
-      } else {
-        SetBitsAllocated(ctx, bitsAllocated);
-      }
-      if (GetBitsStored(ctx) == 0) {
-        SetBitsStored(ctx, bitsStored);
-      }
-      SetPlanarConfiguration(ctx, +PlanarConfigurationEnum::Interleaved);
+      samplesPerPixel = static_cast<size_t>(basicInfo.num_color_channels);
 
       pixelFormat.num_channels = static_cast<uint32_t>(samplesPerPixel);
       pixelFormat.data_type =
           bitsAllocated <= 8 ? JXL_TYPE_UINT8 : JXL_TYPE_UINT16;
       pixelFormat.endianness = JXL_NATIVE_ENDIAN;
       pixelFormat.align = 0;
+      continue;
+    }
+
+    if (status == JXL_DEC_COLOR_ENCODING) {
+      if (samplesPerPixel > 1) {
+        JxlColorEncoding srgb = {};
+        srgb.color_space = JXL_COLOR_SPACE_RGB;
+        srgb.white_point = JXL_WHITE_POINT_D65;
+        srgb.primaries = JXL_PRIMARIES_SRGB;
+        srgb.transfer_function = JXL_TRANSFER_FUNCTION_SRGB;
+        srgb.rendering_intent = JXL_RENDERING_INTENT_RELATIVE;
+        if (JxlDecoderSetOutputColorProfile(dec, &srgb, nullptr, 0) !=
+            JXL_DEC_SUCCESS) {
+          JxlDecoderDestroy(dec);
+          ThrowCodecsException(
+              "DecodeJpegXl::JxlDecoderSetOutputColorProfile::Failed");
+        }
+      }
       continue;
     }
 
