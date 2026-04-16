@@ -3,173 +3,561 @@
   <head>
     <title>dcmjs-codecs transcoding example</title>
     <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://unpkg.com/vue@3.5.13/dist/vue.global.prod.js"></script>
     <style>
-      html,
-      body {
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
         margin: 0;
         padding: 0;
+      }
+
+      html,
+      body {
+        min-height: 100%;
         width: 100%;
-        height: 100%;
-        display: table;
       }
-      .container {
-        display: table-cell;
-        text-align: center;
-        vertical-align: middle;
+
+      body {
+        min-height: 100vh;
+        background: #0d1117;
+        color: #c9d1d9;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+        font-size: 14px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 32px 16px;
       }
-      .content {
-        display: inline-block;
+
+      .page-title {
+        font-size: 24px;
+        font-weight: 600;
+        color: #f0f6fc;
+        letter-spacing: -0.3px;
+        margin-bottom: 4px;
+      }
+
+      .card {
+        width: 100%;
+        max-width: 960px;
+        background: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 12px;
+        overflow: hidden;
+      }
+
+      .drop-zone {
+        padding: 30px 20px;
         text-align: center;
+        border-bottom: 1px solid #30363d;
+        transition:
+          background 0.15s,
+          box-shadow 0.15s;
+      }
+
+      .drop-zone.dragging {
+        background: rgba(88, 166, 255, 0.05);
+        box-shadow: inset 0 0 0 2px #58a6ff;
+      }
+
+      .drop-title {
+        font-size: 13px;
+        color: #8b949e;
+        margin-bottom: 14px;
+      }
+
+      .controls-row {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+
+      .select-label {
+        font-size: 13px;
+        color: #8b949e;
+        white-space: nowrap;
+      }
+
+      .syntax-select {
+        background: #0d1117;
+        color: #c9d1d9;
+        border: 1px solid #30363d;
+        border-radius: 6px;
+        padding: 5px 10px;
+        font-size: 13px;
+        cursor: pointer;
+        outline: none;
+        transition: border-color 0.12s;
+      }
+
+      .syntax-select:hover,
+      .syntax-select:focus {
+        border-color: #58a6ff;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 16px;
+        border-radius: 6px;
+        border: 1px solid;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition:
+          background 0.12s,
+          opacity 0.12s;
+      }
+
+      .btn:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+      }
+
+      .btn-primary {
+        color: #58a6ff;
+        border-color: rgba(56, 139, 253, 0.4);
+        background: transparent;
+      }
+
+      .btn-primary:not(:disabled):hover {
+        background: rgba(88, 166, 255, 0.1);
+      }
+
+      .btn-danger {
+        color: #f85149;
+        border-color: rgba(248, 81, 73, 0.4);
+        background: transparent;
+      }
+
+      .btn-danger:not(:disabled):hover {
+        background: rgba(248, 81, 73, 0.1);
+      }
+
+      .status-bar {
+        padding: 8px 14px;
+        border-bottom: 1px solid #30363d;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        min-height: 40px;
+      }
+
+      .status-text {
+        flex: 1;
+        font-size: 12px;
+        color: #8b949e;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .status-text.error {
+        color: #f85149;
+      }
+
+      .console-wrap {
+        background: #0d1117;
+        padding: 0;
+        min-height: 300px;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .console-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 6px 14px;
+        border-bottom: 1px solid #21262d;
+        background: #161b22;
+      }
+
+      .console-header-title {
+        font-size: 11px;
+        font-weight: 600;
+        color: #484f58;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+      }
+
+      .console-output {
+        flex: 1;
+        padding: 12px 16px;
+        font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+        font-size: 12px;
+        line-height: 1.6;
+        overflow-y: auto;
+        max-height: 420px;
+        min-height: 260px;
+        white-space: pre-wrap;
+        word-break: break-all;
+      }
+
+      .log-entry {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 2px;
+      }
+
+      .log-time {
+        color: #484f58;
+        flex-shrink: 0;
+        user-select: none;
+      }
+
+      .log-text {
+        color: #c9d1d9;
+      }
+
+      .log-text.info {
+        color: #79c0ff;
+      }
+
+      .log-text.success {
+        color: #3fb950;
+      }
+
+      .log-text.warn {
+        color: #d29922;
+      }
+
+      .log-text.error {
+        color: #f85149;
+      }
+
+      .log-text.timing {
+        color: #a5a5ff;
+      }
+
+      .log-text.divider {
+        color: #30363d;
+      }
+
+      .console-placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 260px;
+        color: #484f58;
+        font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+        font-size: 12px;
+      }
+
+      .footer-note {
+        margin-top: 14px;
+        font-size: 12px;
+        color: #484f58;
+        text-align: center;
+      }
+
+      @media (max-width: 640px) {
+        .controls-row {
+          flex-direction: column;
+        }
+
+        .btn {
+          justify-content: center;
+        }
       }
     </style>
   </head>
   <body>
-    <div id="dropZone" class="container">
-      <div class="content">
-        <p id="infoText">
-          <a id="openLink" href="">Open</a> or drag and drop a DICOM Part 10 file to transcode
-          it!<br />Nothing gets uploaded anywhere.
-        </p>
-        <div>
-          <label for="newTransferSyntax">New transfer syntax: </label>
-          <select id="newTransferSyntax"></select>
+    <h1 class="page-title">dcmjs-codecs transcoding example</h1>
+    <div id="app">
+      <div
+        class="card"
+        @dragover.prevent="onDragOver"
+        @dragleave="onDragLeave"
+        @drop.prevent="onDrop"
+      >
+        <div class="drop-zone" :class="{ dragging: isDragging }">
+          <p class="drop-title">Open or drag and drop a DICOM Part 10 file to transcode it!</p>
+          <div class="controls-row">
+            <button class="btn btn-primary" :disabled="isTranscoding" @click="openFile">
+              Open DICOM file
+            </button>
+            <span class="select-label">Transcode to:</span>
+            <select class="syntax-select" v-model="selectedSyntax" :disabled="isTranscoding">
+              <option v-for="item in transcodeMap" :key="item.syntax" :value="item.syntax">
+                {{ item.name }} [{{ item.syntax }}]
+              </option>
+            </select>
+          </div>
         </div>
-        <p id="errorText"></p>
+
+        <div class="status-bar">
+          <span class="status-text" :class="{ error: hasError }">{{ statusText }}</span>
+          <button class="btn btn-danger" :disabled="logs.length === 0" @click="clearLogs">
+            Clear
+          </button>
+        </div>
+
+        <div class="console-wrap">
+          <div class="console-header">
+            <span class="console-header-title">Console</span>
+          </div>
+          <div class="console-output" ref="consoleRef">
+            <template v-if="logs.length > 0">
+              <div class="log-entry" v-for="(entry, i) in logs" :key="i">
+                <span class="log-time">{{ entry.time }}</span>
+                <span class="log-text" :class="entry.level">{{ entry.text }}</span>
+              </div>
+            </template>
+            <div v-else class="console-placeholder">Waiting for transcoding output...</div>
+          </div>
+        </div>
       </div>
+      <p class="footer-note">Nothing is uploaded anywhere.</p>
     </div>
+
+    <script type="text/javascript" src="https://unpkg.com/dcmjs"></script>
+    <script type="text/javascript" src="dcmjs-codecs.min.js"></script>
+    <script>
+      const { createApp, ref, nextTick, onMounted } = Vue;
+      const { constants, NativeCodecs, Transcoder } = window.dcmjsCodecs;
+      const { TransferSyntax } = constants;
+
+      const transcodeMap = [
+        { name: 'Implicit VR Endian', syntax: TransferSyntax.ImplicitVRLittleEndian },
+        { name: 'Explicit VR Little Endian', syntax: TransferSyntax.ExplicitVRLittleEndian },
+        { name: 'Explicit VR Big Endian', syntax: TransferSyntax.ExplicitVRBigEndian },
+        { name: 'RLE Lossless', syntax: TransferSyntax.RleLossless },
+        { name: 'JPEG Baseline', syntax: TransferSyntax.JpegBaselineProcess1 },
+        { name: 'JPEG Lossless', syntax: TransferSyntax.JpegLosslessProcess14V1 },
+        { name: 'JPEG-LS Lossless', syntax: TransferSyntax.JpegLsLossless },
+        { name: 'JPEG-LS Lossy', syntax: TransferSyntax.JpegLsLossy },
+        { name: 'JPEG 2000 Lossless', syntax: TransferSyntax.Jpeg2000Lossless },
+        { name: 'JPEG 2000 Lossy', syntax: TransferSyntax.Jpeg2000Lossy },
+        { name: 'JPEG XL Lossless', syntax: TransferSyntax.JpegXlLossless },
+        { name: 'JPEG XL Lossy', syntax: TransferSyntax.JpegXlLossy },
+        {
+          name: 'High-Throughput JPEG 2000 Lossless',
+          syntax: TransferSyntax.HtJpeg2000Lossless,
+        },
+        {
+          name: 'High-Throughput JPEG 2000 Lossless RCPL',
+          syntax: TransferSyntax.HtJpeg2000LosslessRpcl,
+        },
+        { name: 'High-Throughput JPEG 2000 Lossy', syntax: TransferSyntax.HtJpeg2000Lossy },
+      ];
+
+      createApp({
+        setup() {
+          const consoleRef = ref(null);
+          const isDragging = ref(false);
+          const isTranscoding = ref(false);
+          const hasError = ref(false);
+          const statusText = ref('Initializing codecs...');
+          const selectedSyntax = ref(transcodeMap[0].syntax);
+          const logs = ref([]);
+
+          function timestamp() {
+            const now = new Date();
+            return (
+              now.getHours().toString().padStart(2, '0') +
+              ':' +
+              now.getMinutes().toString().padStart(2, '0') +
+              ':' +
+              now.getSeconds().toString().padStart(2, '0') +
+              '.' +
+              now.getMilliseconds().toString().padStart(3, '0')
+            );
+          }
+
+          function pushLog(text, level = 'default') {
+            logs.value.push({ time: timestamp(), text, level });
+            nextTick(() => {
+              const el = consoleRef.value;
+              if (el) {
+                el.scrollTop = el.scrollHeight;
+              }
+            });
+          }
+
+          function clearLogs() {
+            logs.value = [];
+          }
+
+          function downloadDicomPart10(arrayBuffer, fileName) {
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([arrayBuffer], { type: 'application/dicom' }));
+            a.download = fileName;
+            a.click();
+          }
+
+          function transcodeFile(file) {
+            if (!file) {
+              return;
+            }
+
+            const reader = new FileReader();
+            isTranscoding.value = true;
+            hasError.value = false;
+            statusText.value = 'Loading file...';
+
+            reader.onload = () => {
+              try {
+                const arrayBuffer = reader.result;
+
+                pushLog('─'.repeat(60), 'divider');
+                pushLog(`File: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`, 'info');
+
+                const t0 = performance.now();
+                const transcoder = new Transcoder(arrayBuffer);
+                const t1 = performance.now();
+                pushLog(`Parsing time: ${(t1 - t0).toFixed(2)} ms`, 'timing');
+
+                const oldTransferSyntaxUid = transcoder.getTransferSyntaxUid();
+                const oldTransferSyntaxItem = transcodeMap.find(
+                  (item) => item.syntax === oldTransferSyntaxUid
+                );
+
+                if (oldTransferSyntaxItem === undefined) {
+                  const msg = `Transfer syntax ${oldTransferSyntaxUid} is not supported`;
+                  pushLog(msg, 'error');
+                  hasError.value = true;
+                  statusText.value = msg;
+                  return;
+                }
+
+                pushLog(
+                  `Source: ${oldTransferSyntaxItem.name} [${oldTransferSyntaxUid}]`,
+                  'default'
+                );
+
+                const newTransferSyntaxUid = selectedSyntax.value;
+                const newTransferSyntaxItem = transcodeMap.find(
+                  (item) => item.syntax === newTransferSyntaxUid
+                );
+
+                if (oldTransferSyntaxUid === newTransferSyntaxUid) {
+                  const msg = `Transfer syntax is already ${oldTransferSyntaxUid} — no transcoding needed`;
+                  pushLog(msg, 'warn');
+                  hasError.value = false;
+                  statusText.value = msg;
+                  return;
+                }
+
+                pushLog(
+                  `Target: ${newTransferSyntaxItem.name} [${newTransferSyntaxUid}]`,
+                  'default'
+                );
+
+                const t2 = performance.now();
+                transcoder.transcode(newTransferSyntaxUid);
+                const t3 = performance.now();
+                pushLog(`Transcoding time: ${(t3 - t2).toFixed(2)} ms`, 'timing');
+
+                const t4 = performance.now();
+                const transcodedArrayBuffer = transcoder.getDicomPart10();
+                const t5 = performance.now();
+                pushLog(`Writing time: ${(t5 - t4).toFixed(2)} ms`, 'timing');
+                pushLog(
+                  `Total time: ${(t5 - t0).toFixed(2)} ms | Output size: ${(transcodedArrayBuffer.byteLength / 1024).toFixed(1)} KB`,
+                  'success'
+                );
+
+                const outName = `TRANSCODED_${newTransferSyntaxUid}_${Date.now()}.DCM`;
+                downloadDicomPart10(transcodedArrayBuffer, outName);
+                pushLog(`Downloaded: ${outName}`, 'success');
+
+                statusText.value =
+                  `${oldTransferSyntaxItem.name} → ${newTransferSyntaxItem.name} | ` +
+                  `Transcode ${(t3 - t2).toFixed(2)} ms | Total ${(t5 - t0).toFixed(2)} ms`;
+                hasError.value = false;
+              } catch (err) {
+                pushLog('Error: ' + err.message, 'error');
+                hasError.value = true;
+                statusText.value = 'Error: ' + err.message;
+                console.error(err);
+              } finally {
+                isTranscoding.value = false;
+              }
+            };
+
+            reader.onerror = () => {
+              isTranscoding.value = false;
+              hasError.value = true;
+              statusText.value = 'Error reading file';
+              pushLog('Error reading file', 'error');
+            };
+
+            reader.readAsArrayBuffer(file);
+          }
+
+          function onDragOver(event) {
+            isDragging.value = true;
+            if (event.dataTransfer) {
+              event.dataTransfer.dropEffect = 'copy';
+            }
+          }
+
+          function onDragLeave() {
+            isDragging.value = false;
+          }
+
+          function onDrop(event) {
+            isDragging.value = false;
+            const file =
+              event.dataTransfer && event.dataTransfer.files
+                ? event.dataTransfer.files[0]
+                : undefined;
+            transcodeFile(file);
+          }
+
+          function openFile() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.onchange = (event) => {
+              transcodeFile(event.target.files[0]);
+            };
+            input.click();
+          }
+
+          onMounted(async () => {
+            window.addEventListener('dragover', (event) => {
+              event.preventDefault();
+            });
+            window.addEventListener('drop', (event) => {
+              event.preventDefault();
+            });
+
+            try {
+              pushLog('Initializing NativeCodecs...', 'info');
+              await NativeCodecs.initializeAsync({ logCodecsInfo: true, logCodecsTrace: true });
+              pushLog('NativeCodecs initialized successfully', 'success');
+              statusText.value = 'Ready';
+            } catch (err) {
+              pushLog('Failed to initialize NativeCodecs: ' + err.message, 'error');
+              hasError.value = true;
+              statusText.value = 'Initialization failed: ' + err.message;
+            }
+          });
+
+          return {
+            consoleRef,
+            isDragging,
+            isTranscoding,
+            hasError,
+            statusText,
+            selectedSyntax,
+            transcodeMap,
+            logs,
+            clearLogs,
+            onDragOver,
+            onDragLeave,
+            onDrop,
+            openFile,
+          };
+        },
+      }).mount('#app');
+    </script>
   </body>
-  <script type="text/javascript" src="https://unpkg.com/dcmjs"></script>
-  <script type="text/javascript" src="dcmjs-codecs.min.js"></script>
-  <script>
-    const { constants, NativeCodecs, Transcoder } = window.dcmjsCodecs;
-    const { TransferSyntax } = constants;
-    const TranscodeMap = [
-      { name: 'Implicit VR Endian', syntax: TransferSyntax.ImplicitVRLittleEndian },
-      { name: 'Explicit VR Little Endian', syntax: TransferSyntax.ExplicitVRLittleEndian },
-      { name: 'Explicit VR Big Endian', syntax: TransferSyntax.ExplicitVRBigEndian },
-      { name: 'RLE Lossless', syntax: TransferSyntax.RleLossless },
-      { name: 'JPEG Baseline', syntax: TransferSyntax.JpegBaselineProcess1 },
-      { name: 'JPEG Lossless', syntax: TransferSyntax.JpegLosslessProcess14V1 },
-      { name: 'JPEG-LS Lossless', syntax: TransferSyntax.JpegLsLossless },
-      { name: 'JPEG-LS Lossy', syntax: TransferSyntax.JpegLsLossy },
-      { name: 'JPEG 2000 Lossless', syntax: TransferSyntax.Jpeg2000Lossless },
-      { name: 'JPEG 2000 Lossy', syntax: TransferSyntax.Jpeg2000Lossy },
-      { name: 'JPEG XL Lossless', syntax: TransferSyntax.JpegXlLossless },
-      { name: 'JPEG XL Lossy', syntax: TransferSyntax.JpegXlLossy },
-      { name: 'High-Throughput JPEG 2000 Lossless', syntax: TransferSyntax.HtJpeg2000Lossless },
-      {
-        name: 'High-Throughput JPEG 2000 Lossless RCPL',
-        syntax: TransferSyntax.HtJpeg2000LosslessRpcl,
-      },
-      { name: 'High-Throughput JPEG 2000 Lossy', syntax: TransferSyntax.HtJpeg2000Lossy },
-    ];
-
-    window.onload = async (event) => {
-      const newTransferSyntaxElement = document.getElementById('newTransferSyntax');
-      TranscodeMap.forEach((item, index) => {
-        const option = document.createElement('option');
-        option.value = item.syntax;
-        option.text = `${item.name} [${item.syntax}]`;
-        if (index === 0) {
-          option.selected = true;
-        }
-        newTransferSyntaxElement.appendChild(option);
-      });
-
-      await NativeCodecs.initializeAsync({ logCodecsInfo: true, logCodecsTrace: true });
-    };
-
-    function downloadDicomPart10(arrayBuffer, fileName) {
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(new Blob([arrayBuffer], { type: 'application/dicom' }));
-      a.download = fileName;
-      a.click();
-    }
-
-    function transcodeFile(file) {
-      const reader = new FileReader();
-      reader.onload = (file) => {
-        const arrayBuffer = reader.result;
-        const newTransferSyntaxElement = document.getElementById('newTransferSyntax');
-        const errorTextElement = document.getElementById('errorText');
-        errorTextElement.innerText = '';
-
-        try {
-          const t0 = performance.now();
-          const transcoder = new Transcoder(arrayBuffer);
-          const t1 = performance.now();
-          console.log(`Parsing time: ${t1 - t0} ms`);
-
-          const oldTransferSyntaxUid = transcoder.getTransferSyntaxUid();
-          const oldTransferSyntaxItem = TranscodeMap.find(
-            (item) => item.syntax === oldTransferSyntaxUid
-          );
-          if (oldTransferSyntaxItem === undefined) {
-            errorTextElement.innerText = `DICOM Part 10 file transfer syntax ${oldTransferSyntaxUid} is not supported...`;
-            return;
-          }
-
-          const newTransferSyntaxUid = newTransferSyntaxElement.value;
-          const newTransferSyntaxItem = TranscodeMap.find(
-            (item) => item.syntax === newTransferSyntaxUid
-          );
-          if (oldTransferSyntaxUid === newTransferSyntaxUid) {
-            errorTextElement.innerText = `DICOM Part 10 file transfer syntax already has ${oldTransferSyntaxUid} syntax. No transcoding needed!`;
-            return;
-          }
-
-          const t2 = performance.now();
-          transcoder.transcode(newTransferSyntaxUid);
-          const t3 = performance.now();
-          console.log(
-            `Transcoded from ${oldTransferSyntaxItem.name} [${oldTransferSyntaxItem.syntax}] to ${newTransferSyntaxItem.name} [${newTransferSyntaxItem.syntax}]: ${t3 - t2} ms`
-          );
-
-          const t4 = performance.now();
-          const transcodedArrayBuffer = transcoder.getDicomPart10();
-          const t5 = performance.now();
-          console.log(`Writing time: ${t5 - t4} ms`);
-
-          downloadDicomPart10(
-            transcodedArrayBuffer,
-            `TRANSCODED_${newTransferSyntaxUid}_${Date.now()}.DCM`
-          );
-        } catch (err) {
-          errorTextElement.innerText = 'Error: ' + err.message;
-          throw err;
-        }
-      };
-      reader.readAsArrayBuffer(file);
-    }
-
-    const dropZone = document.getElementById('dropZone');
-    dropZone.ondragover = (event) => {
-      event.stopPropagation();
-      event.preventDefault();
-      event.dataTransfer.dropEffect = 'copy';
-    };
-    dropZone.ondrop = (event) => {
-      event.stopPropagation();
-      event.preventDefault();
-      const files = event.dataTransfer.files;
-      transcodeFile(files[0]);
-    };
-
-    const openLink = document.getElementById('openLink');
-    openLink.onclick = () => {
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.onchange = (event) => {
-        const files = event.target.files;
-        transcodeFile(files[0]);
-      };
-      input.click();
-
-      return false;
-    };
-  </script>
 </html>

@@ -31,7 +31,7 @@ class Transcoder {
       if (transferSyntaxUid) {
         this._fromElementsBuffer(elementsOrBuffer, transferSyntaxUid, readOptions);
       } else {
-        this._fromP10Buffer(elementsOrBuffer);
+        this._fromP10Buffer(elementsOrBuffer, readOptions);
       }
       return;
     }
