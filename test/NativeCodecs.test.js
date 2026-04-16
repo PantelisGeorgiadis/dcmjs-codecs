@@ -11,6 +11,8 @@ const chai = require('chai');
 const sinon = require('sinon');
 const expect = chai.expect;
 
+const timeout = 30000; // 30 seconds
+
 const TestImageDimMin = 16;
 const TestImageDimMax = 1024;
 const TestImageDimLength = 1;
@@ -34,11 +36,16 @@ function getRandomDims() {
 function roundTripTest(encodeFn, decodeFn, parameters) {
   getRandomDims().forEach((width) => {
     getRandomDims().forEach((height) => {
-      [8, 16].forEach((bits) => {
+      [
+        { bitsAllocated: 8, bitsStored: 8 },
+        { bitsAllocated: 16, bitsStored: 12 },
+        { bitsAllocated: 16, bitsStored: 16 },
+      ].forEach((bits) => {
         [true, false].forEach((signed) => {
           const grayscaleContext = createContextFromGrayscaleRandomImage(
-            bits,
-            bits === 16 ? signed : false,
+            bits.bitsAllocated,
+            bits.bitsStored,
+            bits.bitsAllocated === 16 ? signed : false,
             width,
             height
           );
@@ -72,6 +79,12 @@ describe('Uninitialized NativeCodecs', () => {
     expect(() => {
       NativeCodecs.encodeJpeg2000(undefined, undefined);
     }).to.throw();
+    expect(() => {
+      NativeCodecs.encodeJpegXl(undefined, undefined);
+    }).to.throw();
+    expect(() => {
+      NativeCodecs.encodeHtJpeg2000(undefined, undefined);
+    }).to.throw();
 
     expect(() => {
       NativeCodecs.decodeRle(undefined, undefined);
@@ -83,7 +96,13 @@ describe('Uninitialized NativeCodecs', () => {
       NativeCodecs.decodeJpegLs(undefined, undefined);
     }).to.throw();
     expect(() => {
+      NativeCodecs.decodeJpegXl(undefined, undefined);
+    }).to.throw();
+    expect(() => {
       NativeCodecs.decodeJpeg2000(undefined, undefined);
+    }).to.throw();
+    expect(() => {
+      NativeCodecs.decodeHtJpeg2000(undefined, undefined);
     }).to.throw();
   });
 });
@@ -118,20 +137,30 @@ describe('NativeCodecs', () => {
   it('should correctly encode and decode basic RleLossless', () => {
     expect(NativeCodecs.isInitialized()).to.be.true;
     roundTripTest(NativeCodecs.encodeRle.name, NativeCodecs.decodeRle.name);
-  }).timeout(20000);
+  }).timeout(timeout);
 
   it('should correctly encode and decode basic JpegLossless', () => {
     expect(NativeCodecs.isInitialized()).to.be.true;
     roundTripTest(NativeCodecs.encodeJpeg.name, NativeCodecs.decodeJpeg.name);
-  }).timeout(20000);
+  }).timeout(timeout);
 
   it('should correctly encode and decode basic JpegLSLossless', () => {
     expect(NativeCodecs.isInitialized()).to.be.true;
     roundTripTest(NativeCodecs.encodeJpegLs.name, NativeCodecs.decodeJpegLs.name);
-  }).timeout(20000);
+  }).timeout(timeout);
 
   it('should correctly encode and decode basic Jpeg2000Lossless', () => {
     expect(NativeCodecs.isInitialized()).to.be.true;
     roundTripTest(NativeCodecs.encodeJpeg2000.name, NativeCodecs.decodeJpeg2000.name);
-  }).timeout(20000);
+  }).timeout(timeout);
+
+  it('should correctly encode and decode basic JpegXlLossless', () => {
+    expect(NativeCodecs.isInitialized()).to.be.true;
+    roundTripTest(NativeCodecs.encodeJpegXl.name, NativeCodecs.decodeJpegXl.name);
+  }).timeout(timeout);
+
+  it('should correctly encode and decode basic HtJpeg2000Lossless', () => {
+    expect(NativeCodecs.isInitialized()).to.be.true;
+    roundTripTest(NativeCodecs.encodeHtJpeg2000.name, NativeCodecs.decodeHtJpeg2000.name);
+  }).timeout(timeout);
 });

@@ -60,6 +60,8 @@ class Codec {
       [TransferSyntax.JpegLsLossy]: JpegLsLossyCodec,
       [TransferSyntax.Jpeg2000Lossless]: Jpeg2000LosslessCodec,
       [TransferSyntax.Jpeg2000Lossy]: Jpeg2000LossyCodec,
+      [TransferSyntax.JpegXlLossless]: JpegXlLosslessCodec,
+      [TransferSyntax.JpegXlLossy]: JpegXlLossyCodec,
       [TransferSyntax.HtJpeg2000Lossless]: HtJpeg2000LosslessCodec,
       [TransferSyntax.HtJpeg2000LosslessRpcl]: HtJpeg2000LosslessRpclCodec,
       [TransferSyntax.HtJpeg2000Lossy]: HtJpeg2000LossyCodec,
@@ -110,6 +112,20 @@ class Codec {
           elements.SamplesPerPixel,
           PlanarConfiguration.Planar
         );
+      }
+
+      if (parameters.shiftSignedPixels) {
+        const src = new Uint16Array(
+          frameData.buffer,
+          frameData.byteOffset,
+          frameData.byteLength / 2
+        );
+        const shifted = new Uint16Array(src.length);
+        const offset = 1 << (elements.BitsAllocated - 1);
+        for (let j = 0; j < src.length; j++) {
+          shifted[j] = src[j] + offset;
+        }
+        frameData = new Uint8Array(shifted.buffer);
       }
 
       const context = Context.fromDicomElements(elements);
@@ -875,7 +891,7 @@ class Jpeg2000BaseCodec extends Codec {
       decoderParameters
     );
 
-    // Handle photo interpretation
+    // Handle photometric interpretation
     if (
       updatedElements.PhotometricInterpretation == PhotometricInterpretation.YbrIct ||
       updatedElements.PhotometricInterpretation == PhotometricInterpretation.YbrRct
@@ -1046,6 +1062,245 @@ class HtJpeg2000LossyCodec extends Jpeg2000BaseCodec {
   }
 }
 //#endregion
+
+//#region JpegXlBaseCodec
+class JpegXlBaseCodec extends Codec {
+  /**
+   * Encodes DICOM image for JPEG-XL transfer syntaxes.
+   * @method
+   * @param {Object} elements - DICOM image elements.
+   * @param {string} syntax - DICOM image elements transfer syntax UID.
+   * @param {string} encoderFnName - Encoder function name.
+   * @param {Object} [parameters] - Encoder parameters.
+   * @returns {Object} Updated DICOM image elements.
+   */
+  encode(elements, syntax, encoderFnName, parameters = {}) {
+    const encoderParameters = { ...parameters };
+
+    if (
+      elements.PhotometricInterpretation === PhotometricInterpretation.YbrPartial422 ||
+      elements.PhotometricInterpretation === PhotometricInterpretation.YbrPartial420
+    ) {
+      throw new Error(
+        `Photometric Interpretation ${elements.PhotometricInterpretation} not supported by JPEG-XL encoder`
+      );
+    }
+
+    // Handle YBR_FULL photometric interpretation
+    if (elements.PhotometricInterpretation === PhotometricInterpretation.YbrFull) {
+      encoderParameters.convertYbrFullToRgb = true;
+    }
+
+    // Handle YBR_FULL_422 photometric interpretation
+    if (elements.PhotometricInterpretation === PhotometricInterpretation.YbrFull422) {
+      encoderParameters.convertYbrFull422ToRgb = true;
+    }
+
+    // Measure original size
+    const pixelDataArray = Array.isArray(elements.PixelData)
+      ? elements.PixelData
+      : [elements.PixelData];
+    const oldSize = pixelDataArray.reduce((acc, buffer) => acc + buffer.byteLength, 0);
+
+    // Handle planar configuration
+    if (
+      elements.PlanarConfiguration === PlanarConfiguration.Planar &&
+      elements.SamplesPerPixel > 1
+    ) {
+      if (elements.SamplesPerPixel !== 3 || elements.BitsStored > 8) {
+        throw new Error(
+          'Planar reconfiguration only implemented for SamplesPerPixel = 3 and BitsStored <= 8'
+        );
+      }
+      encoderParameters.updatePlanarConfiguration = true;
+    }
+
+    // Handle signedness of pixel data for lossy encoding
+    if (
+      encoderParameters.lossy !== undefined &&
+      encoderParameters.lossy &&
+      elements.BitsAllocated > 8 &&
+      elements.PixelRepresentation === 1
+    ) {
+      encoderParameters.shiftSignedPixels = true;
+      elements.PixelRepresentation = 0;
+    }
+
+    // Perform pixel transformation and encoding
+    const updatedElements = super._baseEncodeImpl(
+      elements,
+      syntax,
+      encoderFnName,
+      encoderParameters
+    );
+
+    // Update planar configuration
+    if (
+      encoderParameters.updatePlanarConfiguration !== undefined &&
+      encoderParameters.updatePlanarConfiguration
+    ) {
+      updatedElements.PlanarConfiguration = PlanarConfiguration.Interleaved;
+    }
+
+    // Update pixel representation and rescale intercept to account for the shift
+    if (encoderParameters.shiftSignedPixels !== undefined && encoderParameters.shiftSignedPixels) {
+      updatedElements.PixelRepresentation = 0;
+      const offset = 1 << (updatedElements.BitsAllocated - 1);
+      const rescaleSlope =
+        updatedElements.RescaleSlope !== undefined ? Number(updatedElements.RescaleSlope) : 1;
+      const rescaleIntercept =
+        updatedElements.RescaleIntercept !== undefined
+          ? Number(updatedElements.RescaleIntercept)
+          : 0;
+      updatedElements.RescaleIntercept = rescaleIntercept - offset * rescaleSlope;
+    }
+
+    // Update photometric interpretation
+    if (
+      updatedElements.PhotometricInterpretation == PhotometricInterpretation.YbrIct ||
+      updatedElements.PhotometricInterpretation == PhotometricInterpretation.Xyb
+    ) {
+      updatedElements.PhotometricInterpretation = PhotometricInterpretation.Rgb;
+    }
+    if (
+      updatedElements.PhotometricInterpretation == PhotometricInterpretation.YbrFull422 ||
+      updatedElements.PhotometricInterpretation == PhotometricInterpretation.YbrPartial422 ||
+      updatedElements.PhotometricInterpretation == PhotometricInterpretation.YbrFull
+    ) {
+      updatedElements.PhotometricInterpretation = PhotometricInterpretation.Rgb;
+    }
+
+    // Measure new size
+    const updatedPixelDataArray = Array.isArray(updatedElements.PixelData)
+      ? updatedElements.PixelData
+      : [updatedElements.PixelData];
+    const newSize = updatedPixelDataArray.reduce((acc, buffer) => acc + buffer.byteLength, 0);
+
+    // Update lossy compression elements
+    if (encoderParameters.lossy !== undefined && encoderParameters.lossy) {
+      updatedElements.LossyImageCompressionMethod = 'ISO_18181_1';
+      updatedElements.LossyImageCompression = '01';
+      updatedElements.LossyImageCompressionRatio = `${(oldSize / newSize).toFixed(3)}`;
+
+      // For lossy compression, update SOP Instance UID
+      updatedElements.SOPInstanceUID = Utils.generateDerivedUid();
+    }
+
+    return updatedElements;
+  }
+
+  /**
+   * Decodes DICOM image for JPEG-XL transfer syntaxes.
+   * @method
+   * @param {Object} elements - DICOM image elements.
+   * @param {string} syntax - DICOM image elements transfer syntax UID.
+   * @param {string} decoderFnName - Decoder function name.
+   * @param {Object} [parameters] - Decoder parameters.
+   * @returns {Object} Updated DICOM image elements.
+   */
+  decode(elements, syntax, decoderFnName, parameters = {}) {
+    const decoderParameters = { ...parameters };
+
+    // Handle planar configuration
+    if (
+      elements.PlanarConfiguration === PlanarConfiguration.Planar &&
+      elements.SamplesPerPixel > 1
+    ) {
+      if (elements.SamplesPerPixel !== 3 || elements.BitsStored > 8) {
+        throw new Error(
+          'Planar reconfiguration only implemented for SamplesPerPixel = 3 and BitsStored <= 8'
+        );
+      }
+      decoderParameters.updatePlanarConfiguration = true;
+    }
+
+    // Perform pixel transformation and decoding
+    const updatedElements = super._baseDecodeImpl(
+      elements,
+      syntax,
+      decoderFnName,
+      decoderParameters
+    );
+
+    // Handle photometric interpretation
+    if (
+      updatedElements.PhotometricInterpretation == PhotometricInterpretation.YbrRct ||
+      updatedElements.PhotometricInterpretation == PhotometricInterpretation.Xyb
+    ) {
+      updatedElements.PhotometricInterpretation = PhotometricInterpretation.Rgb;
+    }
+    if (
+      updatedElements.PhotometricInterpretation == PhotometricInterpretation.YbrFull422 ||
+      updatedElements.PhotometricInterpretation == PhotometricInterpretation.YbrPartial422 ||
+      updatedElements.PhotometricInterpretation == PhotometricInterpretation.YbrFull
+    ) {
+      updatedElements.PhotometricInterpretation = PhotometricInterpretation.Rgb;
+    }
+
+    return updatedElements;
+  }
+}
+
+//#region JpegXlLosslessCodec
+class JpegXlLosslessCodec extends JpegXlBaseCodec {
+  /**
+   * Encodes DICOM image for JpegXlLossless transfer syntax.
+   * @method
+   * @param {Object} elements - DICOM image elements.
+   * @param {string} syntax - DICOM image elements transfer syntax UID.
+   * @param {Object} [parameters] - Encoder parameters.
+   * @returns {Object} Updated DICOM image elements.
+   */
+  encode(elements, syntax, parameters = {}) {
+    parameters.lossy = false;
+
+    return super.encode(elements, syntax, 'encodeJpegXl', parameters);
+  }
+
+  /**
+   * Decodes DICOM image for JpegXlLossless transfer syntax.
+   * @method
+   * @param {Object} elements - DICOM image elements.
+   * @param {string} syntax - DICOM image elements transfer syntax UID.
+   * @param {Object} [parameters] - Decoder parameters.
+   * @returns {Object} Updated DICOM image elements.
+   */
+  decode(elements, syntax, parameters = {}) {
+    return super.decode(elements, syntax, 'decodeJpegXl', parameters);
+  }
+}
+//#endregion
+
+//#region JpegXlLossyCodec
+class JpegXlLossyCodec extends JpegXlBaseCodec {
+  /**
+   * Encodes DICOM image for JpegXlLossy transfer syntax.
+   * @method
+   * @param {Object} elements - DICOM image elements.
+   * @param {string} syntax - DICOM image elements transfer syntax UID.
+   * @param {Object} [parameters] - Encoder parameters.
+   * @returns {Object} Updated DICOM image elements.
+   */
+  encode(elements, syntax, parameters = {}) {
+    parameters.lossy = true;
+
+    return super.encode(elements, syntax, 'encodeJpegXl', parameters);
+  }
+
+  /**
+   * Decodes DICOM image for JpegXlLossy transfer syntax.
+   * @method
+   * @param {Object} elements - DICOM image elements.
+   * @param {string} syntax - DICOM image elements transfer syntax UID.
+   * @param {Object} [parameters] - Decoder parameters.
+   * @returns {Object} Updated DICOM image elements.
+   */
+  decode(elements, syntax, parameters = {}) {
+    return super.decode(elements, syntax, 'decodeJpegXl', parameters);
+  }
+}
+//#endregion
+//#endregion
 /* c8 ignore stop */
 
 //#region Exports
@@ -1063,6 +1318,8 @@ module.exports = {
   JpegLosslessProcess14V1Codec,
   JpegLsLosslessCodec,
   JpegLsLossyCodec,
+  JpegXlLosslessCodec,
+  JpegXlLossyCodec,
   RleLosslessCodec,
 };
 //#endregion

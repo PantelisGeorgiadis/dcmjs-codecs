@@ -6,11 +6,11 @@ class RandomGrayscaleImageBuffer {
     if (height < 1) {
       throw new Error('Height should be larger than one pixel');
     }
-    if (bits != 8 && bits != 16) {
-      throw new Error('Bits should be 8 or 16');
+    if (bits != 8 && bits != 12 && bits != 16) {
+      throw new Error('Bits should be 8, 12 or 16');
     }
     if (bits === 8 && signed === true) {
-      throw new Error('Signed should be used with 16 bits');
+      throw new Error('Signed should be used with 12 or 16 bits');
     }
 
     this.bits = bits;
@@ -22,7 +22,7 @@ class RandomGrayscaleImageBuffer {
     this.max = this.signed ? Math.pow(2, this.bits - 1) - 1 : Math.pow(2, this.bits) - 1;
 
     this.buffer =
-      bits === 16
+      bits === 16 || bits === 12
         ? signed === true
           ? new Int16Array(width * height)
           : new Uint16Array(width * height)
@@ -31,7 +31,7 @@ class RandomGrayscaleImageBuffer {
   }
 
   getByteBuffer() {
-    return this.bits === 16
+    return this.bits === 16 || this.bits === 12
       ? new Uint8Array(this.buffer.buffer, this.buffer.byteOffset, this.buffer.byteLength)
       : this.buffer;
   }

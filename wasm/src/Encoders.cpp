@@ -15,6 +15,7 @@
 #include "Encoders/JpegEncoder12.h"
 #include "Encoders/JpegEncoder16.h"
 #include "Encoders/JpegEncoder8.h"
+#include "Encoders/JpegXlEncoder.h"
 #include "Encoders/RleEncoder.h"
 #include "Exception.h"
 #include "Jpeg2000Buffer.h"
@@ -345,7 +346,7 @@ EMSCRIPTEN_KEEPALIVE void EncodeHtJpeg2000(CodecsContext *ctx,
             : false);
   }
   siz.set_image_offset(point(0, 0));
-  siz.set_tile_size(size(0, 0));
+  siz.set_tile_size(ojph::size(0, 0));
   siz.set_tile_offset(point(0, 0));
 
   auto cod = codestream.access_cod();
@@ -364,6 +365,9 @@ EMSCRIPTEN_KEEPALIVE void EncodeHtJpeg2000(CodecsContext *ctx,
     numberOfDecompositions++;
     tw = static_cast<size_t>(ceil(tw / 2));
     th = static_cast<size_t>(ceil(th / 2));
+  }
+  if (numberOfDecompositions == 0) {
+    numberOfDecompositions = 1;
   }
   cod.set_num_decomposition(
       numberOfDecompositions > 6 ? 6 : numberOfDecompositions);
@@ -416,6 +420,17 @@ EMSCRIPTEN_KEEPALIVE void EncodeHtJpeg2000(CodecsContext *ctx,
          static_cast<size_t>(actualHtJpeg2000DataSize));
 
   codestream.close();
+
+  ENCODER_TRACE_EXIT(ctx);
+}
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+EMSCRIPTEN_KEEPALIVE void EncodeJpegXl(CodecsContext *ctx,
+                                       EncoderParameters *params) {
+  ENCODER_TRACE_ENTRY(ctx, params);
+
+  EncodeJpegXlImpl(ctx, params);
 
   ENCODER_TRACE_EXIT(ctx);
 }

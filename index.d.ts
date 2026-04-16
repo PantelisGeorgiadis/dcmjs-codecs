@@ -251,6 +251,16 @@ declare class NativeCodecs {
   ): Context;
 
   /**
+   * Decodes JPEG-XL frame (lossless or lossy).
+   */
+  static decodeJpegXl(context: Context, parameters?: Record<string, unknown>): Context;
+
+  /**
+   * Encodes JPEG-XL frame (lossless or lossy).
+   */
+  static encodeJpegXl(context: Context, parameters?: { lossy?: boolean }): Context;
+
+  /**
    *  Decodes High-Throughput JPEG2000 frame (lossless or lossy).
    */
   static decodeHtJpeg2000(context: Context, parameters?: Record<string, unknown>): Context;
