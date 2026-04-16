@@ -12,6 +12,9 @@ const {
 const NativeCodecs = require('./../src/NativeCodecs');
 const Transcoder = require('./../src/Transcoder');
 
+const dcmjs = require('dcmjs');
+const dcmjsLog = dcmjs.log;
+
 const fs = require('fs');
 const path = require('path');
 const chai = require('chai');
@@ -199,6 +202,9 @@ describe('Transcoder', () => {
       return responseArrayBuffer;
     });
     await NativeCodecs.initializeAsync({ logCodecsInfo: false, logCodecsTrace: false });
+
+    const validationLog = dcmjsLog.getLogger('validation.dcmjs');
+    sinon.stub(validationLog, 'error').callsFake(() => {});
   });
   after(() => {
     sinon.restore();
