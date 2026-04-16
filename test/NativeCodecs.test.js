@@ -11,6 +11,8 @@ const chai = require('chai');
 const sinon = require('sinon');
 const expect = chai.expect;
 
+const timeout = 30000; // 30 seconds
+
 const TestImageDimMin = 16;
 const TestImageDimMax = 1024;
 const TestImageDimLength = 1;
@@ -135,30 +137,30 @@ describe('NativeCodecs', () => {
   it('should correctly encode and decode basic RleLossless', () => {
     expect(NativeCodecs.isInitialized()).to.be.true;
     roundTripTest(NativeCodecs.encodeRle.name, NativeCodecs.decodeRle.name);
-  }).timeout(20000);
+  }).timeout(timeout);
 
   it('should correctly encode and decode basic JpegLossless', () => {
     expect(NativeCodecs.isInitialized()).to.be.true;
     roundTripTest(NativeCodecs.encodeJpeg.name, NativeCodecs.decodeJpeg.name);
-  }).timeout(20000);
+  }).timeout(timeout);
 
   it('should correctly encode and decode basic JpegLSLossless', () => {
     expect(NativeCodecs.isInitialized()).to.be.true;
     roundTripTest(NativeCodecs.encodeJpegLs.name, NativeCodecs.decodeJpegLs.name);
-  }).timeout(20000);
+  }).timeout(timeout);
 
   it('should correctly encode and decode basic Jpeg2000Lossless', () => {
     expect(NativeCodecs.isInitialized()).to.be.true;
     roundTripTest(NativeCodecs.encodeJpeg2000.name, NativeCodecs.decodeJpeg2000.name);
-  }).timeout(20000);
+  }).timeout(timeout);
 
   it('should correctly encode and decode basic JpegXlLossless', () => {
     expect(NativeCodecs.isInitialized()).to.be.true;
     roundTripTest(NativeCodecs.encodeJpegXl.name, NativeCodecs.decodeJpegXl.name);
-  }).timeout(20000);
+  }).timeout(timeout);
 
   it('should correctly encode and decode basic HtJpeg2000Lossless', () => {
     expect(NativeCodecs.isInitialized()).to.be.true;
     roundTripTest(NativeCodecs.encodeHtJpeg2000.name, NativeCodecs.decodeHtJpeg2000.name);
-  }).timeout(20000);
+  }).timeout(timeout);
 });

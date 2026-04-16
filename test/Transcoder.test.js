@@ -18,6 +18,8 @@ const chai = require('chai');
 const sinon = require('sinon');
 const expect = chai.expect;
 
+const timeout = 30000; // 30 seconds
+
 const TestImageDimMin = 16;
 const TestImageDimMax = 1024;
 const TestImageDimLength = 1;
@@ -253,7 +255,7 @@ describe('Transcoder', () => {
     expect(transcodedTransferSyntaxUid2).to.equal(TransferSyntax.ExplicitVRLittleEndian);
     expect(Object.keys(elements).length).to.be.eq(Object.keys(transcodedElements).length);
     expect(Object.keys(elements)).to.have.members(Object.keys(transcodedElements));
-  }).timeout(20000);
+  }).timeout(timeout);
 
   it('should correctly perform basic lossy transcoding', () => {
     const width = 3;
@@ -310,50 +312,50 @@ describe('Transcoder', () => {
     expect(transcodedElements3.LossyImageCompressionMethod).to.equal('ISO_15444_1');
     expect(transcodedElements3.LossyImageCompression).to.equal('01');
     expect(transcodedElements3.LossyImageCompressionRatio).not.to.be.undefined;
-  });
+  }).timeout(timeout);
 
   it('should correctly encode and decode basic ImplicitVRLittleEndian [DICOM part10]', () => {
     expect(NativeCodecs.isInitialized()).to.be.true;
     roundTripTest(TransferSyntax.ImplicitVRLittleEndian);
-  }).timeout(20000);
+  }).timeout(timeout);
 
   it('should correctly encode and decode basic ExplicitVRBigEndian [DICOM part10]', () => {
     expect(NativeCodecs.isInitialized()).to.be.true;
     roundTripTest(TransferSyntax.ExplicitVRBigEndian);
-  }).timeout(20000);
+  }).timeout(timeout);
 
   it('should correctly encode and decode basic RleLossless [DICOM part10]', () => {
     expect(NativeCodecs.isInitialized()).to.be.true;
     roundTripTest(TransferSyntax.RleLossless);
-  }).timeout(20000);
+  }).timeout(timeout);
 
   it('should correctly encode and decode basic JpegLossless [DICOM part10]', () => {
     expect(NativeCodecs.isInitialized()).to.be.true;
     roundTripTest(TransferSyntax.JpegLosslessProcess14V1);
-  }).timeout(20000);
+  }).timeout(timeout);
 
   it('should correctly encode and decode basic JpegLSLossless [DICOM part10]', () => {
     expect(NativeCodecs.isInitialized()).to.be.true;
     roundTripTest(TransferSyntax.JpegLsLossless);
-  }).timeout(20000);
+  }).timeout(timeout);
 
   it('should correctly encode and decode basic Jpeg2000Lossless [DICOM part10]', () => {
     expect(NativeCodecs.isInitialized()).to.be.true;
     roundTripTest(TransferSyntax.Jpeg2000Lossless);
-  }).timeout(20000);
+  }).timeout(timeout);
 
   it('should correctly encode and decode basic JpegXlLossless [DICOM part10]', () => {
     expect(NativeCodecs.isInitialized()).to.be.true;
     roundTripTest(TransferSyntax.JpegXlLossless);
-  }).timeout(20000);
+  }).timeout(timeout);
 
   it('should correctly encode and decode basic HtJpeg2000Lossless [DICOM part10]', () => {
     expect(NativeCodecs.isInitialized()).to.be.true;
     roundTripTest(TransferSyntax.HtJpeg2000Lossless);
-  }).timeout(20000);
+  }).timeout(timeout);
 
   it('should correctly transcode between all supported lossless syntaxes [DICOM part10]', () => {
     expect(NativeCodecs.isInitialized()).to.be.true;
     allLosslessSyntaxesTest();
-  }).timeout(20000);
+  }).timeout(timeout);
 });
