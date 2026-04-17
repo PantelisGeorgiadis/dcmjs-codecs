@@ -324,6 +324,7 @@
       const { constants, NativeCodecs, Transcoder } = window.dcmjsCodecs;
       const { TransferSyntax } = constants;
 
+      // prettier-ignore
       const transcodeMap = [
         { name: 'Implicit VR Endian', syntax: TransferSyntax.ImplicitVRLittleEndian },
         { name: 'Explicit VR Little Endian', syntax: TransferSyntax.ExplicitVRLittleEndian },
@@ -337,14 +338,8 @@
         { name: 'JPEG 2000 Lossy', syntax: TransferSyntax.Jpeg2000Lossy },
         { name: 'JPEG XL Lossless', syntax: TransferSyntax.JpegXlLossless },
         { name: 'JPEG XL Lossy', syntax: TransferSyntax.JpegXlLossy },
-        {
-          name: 'High-Throughput JPEG 2000 Lossless',
-          syntax: TransferSyntax.HtJpeg2000Lossless,
-        },
-        {
-          name: 'High-Throughput JPEG 2000 Lossless RCPL',
-          syntax: TransferSyntax.HtJpeg2000LosslessRpcl,
-        },
+        { name: 'High-Throughput JPEG 2000 Lossless', syntax: TransferSyntax.HtJpeg2000Lossless},
+        { name: 'High-Throughput JPEG 2000 Lossless RCPL', syntax: TransferSyntax.HtJpeg2000LosslessRpcl },
         { name: 'High-Throughput JPEG 2000 Lossy', syntax: TransferSyntax.HtJpeg2000Lossy },
       ];
 
