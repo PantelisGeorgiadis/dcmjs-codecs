@@ -1,4 +1,4 @@
-const dcmjs = require('dcmjs');
+const dcmjs = require('@dcmjs-org/dcmjs');
 const { DicomMetaDictionary } = dcmjs.data;
 
 //#region Utils

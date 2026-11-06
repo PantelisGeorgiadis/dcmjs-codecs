@@ -59,7 +59,12 @@ module.exports = {
     ],
   },
   externals: {
-    dcmjs: 'dcmjs',
+    '@dcmjs-org/dcmjs': {
+      commonjs: '@dcmjs-org/dcmjs',
+      commonjs2: '@dcmjs-org/dcmjs',
+      amd: '@dcmjs-org/dcmjs',
+      root: 'dcmjs',
+    },
   },
   plugins: [
     new BannerPlugin({

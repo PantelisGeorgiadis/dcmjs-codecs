@@ -12,7 +12,7 @@ const {
 const NativeCodecs = require('./../src/NativeCodecs');
 const Transcoder = require('./../src/Transcoder');
 
-const dcmjs = require('dcmjs');
+const dcmjs = require('@dcmjs-org/dcmjs');
 const dcmjsLog = dcmjs.log;
 
 const fs = require('fs');

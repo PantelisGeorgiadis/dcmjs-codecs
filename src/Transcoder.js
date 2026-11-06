@@ -6,7 +6,7 @@ const {
 } = require('./../src/Constants');
 const { Codec } = require('./../src/Codecs');
 
-const dcmjs = require('dcmjs');
+const dcmjs = require('@dcmjs-org/dcmjs');
 const { DicomDict, DicomMessage, DicomMetaDictionary, ReadBufferStream, WriteBufferStream } =
   dcmjs.data;
 const dcmjsLog = dcmjs.log;
