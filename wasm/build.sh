@@ -518,7 +518,7 @@ definitions=(
 )
 
 mkdir -p ./bin
-emcc --no-entry -Werror -O3 -std=c++17 \
+em++ --no-entry -Werror -O3 -std=c++17 \
   "${c_files[@]}" \
   -x c++ "${cpp_files[@]}" \
   "${include_directories[@]}" "${suppress_warnings[@]}" "${definitions[@]}" \
