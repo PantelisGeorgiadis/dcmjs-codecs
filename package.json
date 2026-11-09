@@ -45,7 +45,7 @@
   "funding": "https://github.com/PantelisGeorgiadis/dcmjs-codecs?sponsor=1",
   "homepage": "https://github.com/PantelisGeorgiadis/dcmjs-codecs",
   "dependencies": {
-    "dcmjs": "^0.50.1",
+    "@dcmjs-org/dcmjs": "1.0.0-beta.10",
     "loglevel": "^1.9.2",
     "loglevel-plugin-prefix": "^0.8.4"
   },

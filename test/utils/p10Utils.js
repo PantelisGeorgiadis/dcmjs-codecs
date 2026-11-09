@@ -10,7 +10,7 @@ const { RandomColorImageBuffer, RandomGrayscaleImageBuffer } = require('./random
 const { Frames, FrameConverter } = require('./../../src/Frames');
 const Utils = require('./../../src/Utils');
 
-const dcmjs = require('dcmjs');
+const dcmjs = require('@dcmjs-org/dcmjs');
 const { DicomDict, DicomMessage, DicomMetaDictionary, ReadBufferStream } = dcmjs.data;
 
 const chai = require('chai');
